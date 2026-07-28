@@ -1,8 +1,25 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Navigate, Outlet, Link } from 'react-router-dom';
 import { Cpu } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import LoadingSpinner from '../components/loaders/LoadingSpinner';
 
 export const AuthenticationLayout = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center">
+        <LoadingSpinner size="large" />
+      </div>
+    );
+  }
+
+  // Redirect to dashboard if session already active
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-[#09090b] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden bg-glow-radial">
       

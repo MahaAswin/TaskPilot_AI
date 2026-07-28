@@ -2,16 +2,15 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
-import { loginSchema } from '../../utils/validation';
+import { Lock, Loader2, ArrowRight, Key } from 'lucide-react';
+import { resetPasswordSchema } from '../../utils/validation';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastProvider';
 
-export const Login = () => {
+export const ResetPassword = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { resetPassword } = useAuth();
   const { showSuccess, showError } = useToast();
-  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -19,17 +18,17 @@ export const Login = () => {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(loginSchema)
+    resolver: zodResolver(resetPasswordSchema)
   });
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      await login(data.email, data.password);
-      showSuccess('Session authenticated successfully!');
-      navigate('/dashboard');
+      await resetPassword(data.token, data.password);
+      showSuccess('Password reset complete. Please log in with your new keys.');
+      navigate('/login');
     } catch (err) {
-      showError(err.message || 'Login failed. Please verify credentials.');
+      showError(err.message || 'Verification token is invalid or expired.');
     } finally {
       setIsSubmitting(false);
     }
@@ -38,61 +37,77 @@ export const Login = () => {
   return (
     <div className="glassmorphism p-8 rounded-2xl shadow-glass border border-white/5 bg-[#18181b]/45 backdrop-blur-lg">
       <div className="mb-6 text-center">
-        <h3 className="text-lg font-extrabold text-white font-sans uppercase">Log In Operator</h3>
-        <p className="text-[10px] text-zinc-500 mt-1">Unlock Multi-Agent Productivity OS</p>
+        <h3 className="text-lg font-extrabold text-white font-sans uppercase">Reset Account Keys</h3>
+        <p className="text-[10px] text-zinc-500 mt-1">Configure fresh security keys for your workspace</p>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-        {/* Email */}
+        {/* Token Code */}
         <div>
           <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-            Email Address
+            Verification Token
           </label>
           <div className="relative rounded-xl shadow-sm">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
-              <Mail className="h-4 w-4" />
+              <Key className="h-4 w-4" />
             </div>
             <input
-              type="email"
+              type="text"
               className={`block w-full pl-10 pr-4 py-2.5 rounded-xl glassmorphism-input text-xs ${
-                errors.email ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500' : ''
+                errors.token ? 'border-rose-500 focus:border-rose-500' : ''
               }`}
-              placeholder="operator@taskpilot.ai"
-              {...register('email')}
+              placeholder="UUID TOKEN CODE"
+              {...register('token')}
             />
           </div>
-          {errors.email && (
-            <p className="mt-1.5 text-[10px] text-rose-400 font-semibold">{errors.email.message}</p>
+          {errors.token && (
+            <p className="mt-1.5 text-[10px] text-rose-400 font-semibold">{errors.token.message}</p>
           )}
         </div>
 
-        {/* Password */}
+        {/* New Password */}
         <div>
           <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-            Password
+            New Password
           </label>
           <div className="relative rounded-xl shadow-sm">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
               <Lock className="h-4 w-4" />
             </div>
             <input
-              type={showPassword ? 'text' : 'password'}
-              className={`block w-full pl-10 pr-10 py-2.5 rounded-xl glassmorphism-input text-xs ${
+              type="password"
+              className={`block w-full pl-10 pr-4 py-2.5 rounded-xl glassmorphism-input text-xs ${
                 errors.password ? 'border-rose-500 focus:border-rose-500' : ''
               }`}
               placeholder="••••••••"
               {...register('password')}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-zinc-300"
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
           </div>
           {errors.password && (
             <p className="mt-1.5 text-[10px] text-rose-400 font-semibold">{errors.password.message}</p>
+          )}
+        </div>
+
+        {/* Confirm New Password */}
+        <div>
+          <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+            Confirm New Password
+          </label>
+          <div className="relative rounded-xl shadow-sm">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500">
+              <Lock className="h-4 w-4" />
+            </div>
+            <input
+              type="password"
+              className={`block w-full pl-10 pr-4 py-2.5 rounded-xl glassmorphism-input text-xs ${
+                errors.confirmPassword ? 'border-rose-500 focus:border-rose-500' : ''
+              }`}
+              placeholder="••••••••"
+              {...register('confirmPassword')}
+            />
+          </div>
+          {errors.confirmPassword && (
+            <p className="mt-1.5 text-[10px] text-rose-400 font-semibold">{errors.confirmPassword.message}</p>
           )}
         </div>
 
@@ -102,29 +117,23 @@ export const Login = () => {
           className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-glow text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-all disabled:opacity-50 mt-6"
         >
           {isSubmitting ? (
-            <>
-              <Loader2 className="w-4.5 h-4.5 animate-spin" />
-              <span>Authenticating...</span>
-            </>
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <>
-              <span>Access Environment</span>
+              <span>Rewrite Account Keys</span>
               <ArrowRight className="w-4.5 h-4.5" />
             </>
           )}
         </button>
       </form>
 
-      <div className="mt-6 flex flex-col gap-2.5 text-center border-t border-white/5 pt-4">
-        <Link to="/register" className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition-all">
-          Don't have an account? Sign up
-        </Link>
-        <Link to="/forgot-password" className="text-[10px] text-zinc-500 hover:text-zinc-300 font-medium">
-          Forgot password? Reset access keys
+      <div className="mt-6 text-center border-t border-white/5 pt-4">
+        <Link to="/login" className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold transition-all">
+          Return to login gate
         </Link>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default ResetPassword;

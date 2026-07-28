@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Cpu, Settings, User, Bell } from 'lucide-react';
+import { Cpu, Settings, User, Bell, LogOut } from 'lucide-react';
 import { useTheme } from '../../context/ThemeProvider';
+import { useAuth } from '../../context/AuthContext';
 
 export const Navbar = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard' },
@@ -46,6 +48,13 @@ export const Navbar = () => {
 
           {/* Utility Tools */}
           <div className="flex items-center gap-4">
+            {user && (
+              <div className="hidden sm:flex flex-col items-end leading-none pr-1">
+                <span className="text-[10px] font-bold text-zinc-300">{user.name}</span>
+                <span className="text-[8px] font-black text-emerald-400 font-mono mt-1">SCORE: {user.productivityScore}%</span>
+              </div>
+            )}
+
             <button
               onClick={toggleTheme}
               className="text-zinc-400 hover:text-white transition-colors"
@@ -66,7 +75,7 @@ export const Navbar = () => {
               to="/profile"
               className="w-8 h-8 rounded-lg border border-white/10 bg-zinc-800 flex items-center justify-center font-bold text-xs text-white"
             >
-              OP
+              {user?.name?.[0]?.toUpperCase() || 'OP'}
             </Link>
           </div>
 
