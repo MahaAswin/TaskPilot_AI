@@ -2,41 +2,62 @@ import mongoose from 'mongoose';
 
 const taskSchema = new mongoose.Schema(
   {
-    user: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: false
     },
     title: {
       type: String,
-      required: true,
-      trim: true,
+      required: [true, 'Task title is required'],
+      trim: true
     },
     description: {
       type: String,
-      trim: true,
       default: '',
+      trim: true
     },
-    status: {
+    category: {
       type: String,
-      enum: ['pending', 'in_progress', 'completed'],
-      default: 'pending',
+      default: 'General'
     },
     priority: {
       type: String,
       enum: ['low', 'medium', 'high'],
-      default: 'medium',
+      default: 'medium'
     },
-    category: {
+    status: {
       type: String,
-      default: 'General',
+      enum: ['pending', 'in_progress', 'completed'],
+      default: 'pending'
     },
-    dueDate: {
+    deadline: {
       type: Date,
+      default: null
+    },
+    estimatedTime: {
+      type: Number, // in minutes
+      default: 0
+    },
+    completedTime: {
+      type: Number, // in minutes
+      default: 0
+    },
+    xpReward: {
+      type: Number,
+      default: 20
+    },
+    isRecurring: {
+      type: Boolean,
+      default: false
+    },
+    reminder: {
+      type: Date,
+      default: null
     }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 

@@ -1,60 +1,108 @@
 import asyncHandler from '../utils/AsyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
+import { taskService } from '../services/taskService.js';
 
 /**
- * @desc    Placeholder to create a new task item
- * @route   POST /api/tasks
+ * @desc    Create a new task item
+ * @route   POST /api/tasks/create
  * @access  Private
  */
 export const createTask = asyncHandler(async (req, res) => {
-  const mockTask = {
-    _id: 'task-mock-id',
-    title: req.body.title || 'Dummy Task Title',
-    description: req.body.description || 'Dummy description detail',
-    status: 'pending',
-    priority: req.body.priority || 'medium',
-    category: req.body.category || 'General',
-    dueDate: req.body.dueDate || new Date()
-  };
-
-  return ApiResponse.created(res, mockTask, 'Task successfully added to operational queue');
+  const task = await taskService.createTaskItem(req.body);
+  return ApiResponse.created(res, task, 'Task successfully added to operational queue');
 });
 
 /**
- * @desc    Placeholder to fetch user tasks
- * @route   GET /api/tasks
+ * @desc    Fetch all tasks
+ * @route   GET /api/tasks/all
  * @access  Private
  */
 export const getTasks = asyncHandler(async (req, res) => {
-  const mockTasks = [
-    { _id: 'task-1', title: 'Complete module scaffolding', status: 'in_progress', priority: 'high' },
-    { _id: 'task-2', title: 'Prepare documentation guides', status: 'pending', priority: 'medium' }
-  ];
-
-  return ApiResponse.success(res, mockTasks, 'Queue operations list fetched successfully');
+  const tasks = await taskService.getAllTasks();
+  return ApiResponse.success(res, tasks, 'Task queue list fetched successfully');
 });
 
 /**
- * @desc    Placeholder to update a task status/priority
- * @route   PUT /api/tasks/:id
+ * @desc    Fetch tasks scheduled for today
+ * @route   GET /api/tasks/today
+ * @access  Private
+ */
+export const getTodayTasks = asyncHandler(async (req, res) => {
+  const tasks = await taskService.getAllTasks();
+  return ApiResponse.success(res, tasks, 'Today\'s task queue fetched successfully');
+});
+
+/**
+ * @desc    Update a task status/priority
+ * @route   PUT /api/tasks/update or PUT /api/tasks/update/:id
  * @access  Private
  */
 export const updateTask = asyncHandler(async (req, res) => {
-  const mockUpdated = {
-    _id: req.params.id,
-    title: req.body.title || 'Updated Task Title',
-    status: req.body.status || 'completed',
-    priority: req.body.priority || 'medium'
-  };
-
-  return ApiResponse.success(res, mockUpdated, 'Task updated successfully');
+  const id = req.params.id || req.body.id;
+  const updated = await taskService.updateTaskItem(id, req.body);
+  return ApiResponse.success(res, updated, 'Task updated successfully');
 });
 
 /**
- * @desc    Placeholder to delete a task item
- * @route   DELETE /api/tasks/:id
+ * @desc    Delete a task item
+ * @route   DELETE /api/tasks/delete or DELETE /api/tasks/delete/:id
  * @access  Private
  */
 export const deleteTask = asyncHandler(async (req, res) => {
-  return ApiResponse.success(res, { id: req.params.id }, 'Task deleted successfully');
+  const id = req.params.id || req.body.id;
+  await taskService.deleteTaskItem(id);
+  return ApiResponse.success(res, { id }, 'Task deleted successfully');
 });
+
+/**
+ * @desc    Complete task & award XP
+ * @route   POST /api/tasks/complete or POST /api/tasks/complete/:id
+ * @access  Private
+ */
+export const completeTask = asyncHandler(async (req, res) => {
+  const id = req.params.id || req.body.id;
+  const result = await taskService.completeTaskItem(id);
+  return ApiResponse.success(res, result, 'Task completed & XP processed');
+});
+
+/**
+ * @desc    Get productivity & category analytics
+ * @route   GET /api/tasks/analytics
+ * @access  Private
+ */
+export const getAnalytics = asyncHandler(async (req, res) => {
+  const analytics = await taskService.getAnalyticsReport(req.user?._id);
+  return ApiResponse.success(res, analytics, 'Analytics dashboard metrics fetched');
+});
+
+/**
+ * @desc    Get user unlocked and pending achievements
+ * @route   GET /api/tasks/achievements
+ * @access  Private
+ */
+export const getAchievements = asyncHandler(async (req, res) => {
+  const achievements = await taskService.getAchievementsList(req.user?._id);
+  return ApiResponse.success(res, achievements, 'Achievements unlocked states fetched');
+});
+
+/**
+ * @desc    Get user XP metrics and level targets
+ * @route   GET /api/tasks/xp
+ * @access  Private
+ */
+export const getXP = asyncHandler(async (req, res) => {
+  const xp = await taskService.getXPMetrics(req.user?._id);
+  return ApiResponse.success(res, xp, 'Experience points log fetched');
+});
+
+export default {
+  createTask,
+  getTasks,
+  getTodayTasks,
+  updateTask,
+  deleteTask,
+  completeTask,
+  getAnalytics,
+  getAchievements,
+  getXP
+};
