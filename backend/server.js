@@ -24,6 +24,7 @@ import productivityRoutes from './routes/productivityRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import coordinatorRouter from './agents/coordinator/CoordinatorRouter.js';
 import learningRoutes from './routes/learningRoutes.js';
+import planningRoutes from './routes/planningRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,6 +62,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/planner', plannerRoutes);
+app.use('/api/planning', planningRoutes);
 app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api/creative', creativeRoutes);
 app.use('/api/productivity', productivityRoutes);

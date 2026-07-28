@@ -5,7 +5,7 @@ const goalSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: [true, 'UserId reference is required']
+      required: false
     },
     title: {
       type: String,
@@ -16,19 +16,54 @@ const goalSchema = new mongoose.Schema(
       type: String,
       default: ''
     },
+    category: {
+      type: String,
+      default: 'Career'
+    },
     type: {
       type: String,
-      enum: ['short-term', 'long-term', 'career', 'study', 'project'],
       default: 'study'
+    },
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high'],
+      default: 'high'
     },
     targetDate: {
       type: Date,
-      required: [true, 'Goal target date is required']
+      default: Date.now
+    },
+    deadline: {
+      type: String,
+      default: ''
+    },
+    estimatedHours: {
+      type: Number,
+      default: 100
+    },
+    difficulty: {
+      type: String,
+      enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
+      default: 'Intermediate'
+    },
+    completion: {
+      type: Number,
+      default: 0
     },
     status: {
       type: String,
-      enum: ['pending', 'achieved'],
       default: 'pending'
+    },
+    attachments: [
+      {
+        name: String,
+        url: String,
+        size: String
+      }
+    ],
+    voiceNote: {
+      audioUrl: String,
+      transcript: String
     }
   },
   {

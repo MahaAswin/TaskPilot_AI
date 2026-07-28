@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -246,6 +247,29 @@ export const Planner = () => {
             {/* ── DASHBOARD ─────────────────────────────────────────────── */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
+                {/* AI Planning Canvas Hero Banner */}
+                <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 rounded-3xl p-5 sm:p-6 text-white shadow-glow flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 bg-white/20 text-white rounded-full text-[9px] font-black uppercase tracking-wider border border-white/30">
+                        New Feature
+                      </span>
+                      <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+                    </div>
+                    <h2 className="text-base sm:text-lg font-black tracking-tight">AI Planning Canvas & Roadmap Builder</h2>
+                    <p className="text-xs text-indigo-100 max-w-xl">
+                      Describe any goal in natural language and visualize complete execution roadmaps, milestone graphs, and daily time slots.
+                    </p>
+                  </div>
+                  <Link
+                    to="/planning-canvas"
+                    className="px-5 py-2.5 bg-white hover:bg-slate-100 text-indigo-700 text-xs font-black rounded-2xl shadow-sm flex items-center justify-center gap-2 shrink-0 transition-all"
+                  >
+                    <span>Launch AI Canvas</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+
                 <PlannerStats stats={{ today: todayPlans.length, weekly: plans.length, completed: completedCount, pending: pendingCount, goals: goals.length, upcoming: events.length }} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

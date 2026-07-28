@@ -24,6 +24,8 @@ import Analytics from '../pages/analytics/Analytics';
 import Profile from '../pages/profile/Profile';
 import Settings from '../pages/settings/Settings';
 
+import PlanningCanvasPage from '../pages/planner/PlanningCanvasPage';
+
 export const AppRoutes = () => {
   return (
     <Routes>
@@ -44,6 +46,7 @@ export const AppRoutes = () => {
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/planner" element={<Planner />} />
+        <Route path="/planning-canvas" element={<PlanningCanvasPage />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/learning" element={<Learning />} />
@@ -56,6 +59,7 @@ export const AppRoutes = () => {
       {/* 4. Protected Full-Bleed Workspace Canvas */}
       <Route element={<WorkspaceLayout />}>
         <Route path="/workspace" element={<Workspace />} />
+        <Route path="/planning-canvas-full" element={<PlanningCanvasPage />} />
       </Route>
 
       {/* Fallback to homepage */}
