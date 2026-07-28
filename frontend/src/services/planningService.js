@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = '/api/planning';
+const BASE_URL = '/planning';
 
 export const planningService = {
   // Create a new planning canvas session

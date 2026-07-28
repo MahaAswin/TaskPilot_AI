@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, Cpu, Calendar, CheckSquare, 
-  GraduationCap, Palette, BarChart3, User, Settings, BookOpen, Sparkles, Brain 
+  GraduationCap, Palette, BarChart3, User, Settings, BookOpen, Sparkles, Brain, Zap 
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -13,6 +13,7 @@ export const Sidebar = () => {
     { to: '/planner', label: 'Plan Matrix', icon: Calendar },
     { to: '/tasks', label: 'Tasks Queue', icon: CheckSquare },
     { to: '/skills', label: 'Skill Analyzer', icon: Brain },
+    { to: '/productivity', label: 'Productivity Coach', icon: Zap },
     { to: '/knowledge', label: 'Knowledge Base', icon: GraduationCap },
     { to: '/learning', label: 'Learning Hub', icon: BookOpen },
     { to: '/creative', label: 'Creative Hub', icon: Palette },

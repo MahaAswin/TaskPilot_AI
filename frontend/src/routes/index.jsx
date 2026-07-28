@@ -26,6 +26,7 @@ import Settings from '../pages/settings/Settings';
 
 import PlanningCanvasPage from '../pages/planner/PlanningCanvasPage';
 import SkillCenter from '../pages/skills/SkillCenter';
+import ProductivityCenter from '../pages/productivity/ProductivityCenter';
 
 export const AppRoutes = () => {
   return (
@@ -50,6 +51,7 @@ export const AppRoutes = () => {
         <Route path="/planning-canvas" element={<PlanningCanvasPage />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/skills" element={<SkillCenter />} />
+        <Route path="/productivity" element={<ProductivityCenter />} />
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/learning" element={<Learning />} />
         <Route path="/creative" element={<Creative />} />

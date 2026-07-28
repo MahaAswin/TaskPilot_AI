@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = '/api/skills';
+const BASE_URL = '/skills';
 
 export const skillService = {
   getProfile: async () => {

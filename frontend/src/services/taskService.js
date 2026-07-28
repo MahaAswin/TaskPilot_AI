@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = '/api/tasks';
+const BASE_URL = '/tasks';
 
 export const taskService = {
   createTask: async (taskData) => {
