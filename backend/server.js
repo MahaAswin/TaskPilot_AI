@@ -22,6 +22,7 @@ import knowledgeRoutes from './routes/knowledgeRoutes.js';
 import creativeRoutes from './routes/creativeRoutes.js';
 import productivityRoutes from './routes/productivityRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
+import coordinatorRouter from './agents/coordinator/CoordinatorRouter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,6 +64,7 @@ app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api/creative', creativeRoutes);
 app.use('/api/productivity', productivityRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/coordinator', coordinatorRouter);
 
 // Fallbacks
 app.use(notFound);
