@@ -1,111 +1,129 @@
-# TaskPilot AI - Multi-Agent Productivity OS Foundation
+# 🚀 TaskPilot AI - Agentic AI Operating System
 
-TaskPilot AI is an enterprise-grade Multi-Agent Productivity Operating System built on the MERN stack (MongoDB, Express, React, Node.js). 
-
-This repository establishes the clean, modular project foundation and enterprise-ready architecture. It is fully scaffolded, compiles successfully, and is structured for future additions of agent logic, chat execution engines, and task handlers.
+> **TaskPilot AI** is an enterprise-grade Agentic AI Operating System. Rather than functioning as isolated AI chatbots, TaskPilot AI orchestrates 8 specialized autonomous agents (*Coordinator, Knowledge, Learning, Creative, Planner, Task, Skill Analyzer, Productivity Coach*) through a central routing engine and unified provider abstraction layer.
 
 ---
 
-## 🏗️ Architecture Design
+## 🌟 Architecture & Key Modules
 
-```mermaid
-graph TD
-    User([Operator Request]) --> UI[React Client SPA]
-    UI -->|Axios REST API| Server[Express Server Gateway]
-    Server --> Middlewares{Middleware Chain}
-    Middlewares --> Auth[JWT protect]
-    Middlewares --> Log[loggerMiddleware]
-    Middlewares --> Validate[validateFields]
-    Middlewares --> Errors[errorHandler]
-    
-    Server --> Routes[Placeholder Routes]
-    Routes --> Controllers[Placeholder Controllers]
-    Controllers --> Models[Mongoose Models]
-    Models --> DB[(MongoDB Atlas)]
+- **Project Foundation & Authentication**: Secure JWT authentication, user profile management, protected routes, and session context.
+- **Premium Light SaaS UI**: Modern glassmorphism interface built with Vanilla CSS design system, Framer Motion animations, and Lucide icons.
+- **AI Workspace**: Multi-turn conversation playground with attachments, markdown syntax highlighting, and response telemetry.
+- **AI Planning Canvas**: Visual node-based roadmap creator and milestone breakdown canvas.
+- **8 Autonomous Sub-Agents**:
+  1. **Coordinator Agent**: Central dispatcher, intent resolver, and response aggregator.
+  2. **Planner Agent**: Generates daily milestone matrices and study schedules.
+  3. **Knowledge Agent**: Manages RAG document indexing and knowledge base queries.
+  4. **Learning Agent**: Builds interactive quizzes, assessments, and difficulty metrics.
+  5. **Creative Agent**: Generates flashcard decks, cheatsheets, and creative content.
+  6. **Task Agent**: Tracks task queues, priority matrices, XP levels, streaks, and achievements.
+  7. **Skill Analyzer Agent**: Multi-domain skill radar visualization and topic progress tracking.
+  8. **Productivity Coach Agent**: Focus session Pomodoro timer, distraction tracking, and habit analytics.
+- **Multi-Agent Orchestration Engine**: Intent Analyzer, Workflow Planner, Agent Router, Shared Context Manager, and Node Graph Canvas.
+- **AI Provider Integration Layer**: Vendor-agnostic abstraction supporting **Gemini**, **Grok**, **OpenAI**, **Claude**, **DeepSeek**, **Mistral**, **Ollama (Local Models)**, and **MockProvider** with automated fallback chains.
+
+---
+
+## 🏗️ System Architecture Flow
+
+```
+User Input 
+   ↓
+Coordinator Agent
+   ↓
+Intent Analyzer ➔ Workflow Planner ➔ Agent Router ➔ Execution Pipeline
+   ↓
+Provider Manager (Gemini ➔ Grok ➔ OpenAI ➔ Claude ➔ DeepSeek ➔ Mistral ➔ Ollama ➔ Mock)
+   ↓
+Shared Context Manager ➔ Response Aggregator
+   ↓
+Unified AI Response
 ```
 
 ---
 
-## 📂 Folder Structure
+## ⚡ Quick Start & Installation
 
-```
-TaskPilot-AI/
-├── backend/                      # Node.js + Express Gateway
-│   ├── config/                   # Configuration adapters
-│   ├── database/                 # Mongoose connection init
-│   ├── controllers/              # Request handlers placeholders
-│   ├── middleware/               # Auth, Error, Logger, Validation, 404
-│   ├── models/                   # Schemas (User, Task, Chat, Message, etc.)
-│   ├── routes/                   # Router definitions mappings
-│   ├── services/                 # API client integrations placeholders
-│   ├── agents/                   # Base agent class definitions
-│   ├── prompts/                  # Text prompt templates placeholders
-│   ├── utils/                    # Core helpers (ApiResponse, ApiError)
-│   ├── validators/               # Input payload validators
-│   └── constants/                # Global config configurations
-│
-├── frontend/                     # React + Vite Client
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ui/               # Buttons, base indicators
-│   │   │   ├── common/           # Navbar, Sidebar, PageContainer, EmptyState
-│   │   │   ├── cards/            # GlassCard component
-│   │   │   ├── dialogs/          # Modal overlay, Confirmation dialog
-│   │   │   └── loaders/          # Spinners, skeletons
-│   │   ├── layouts/              # Main, Auth, Dashboard, Workspace wrappers
-│   │   ├── pages/                # Workspace pages (Tasks, Planner, etc.)
-│   │   ├── context/              # Theme and Toast providers
-│   │   ├── routes/               # Client router configuration tables
-│   │   ├── hooks/                # Custom React hook helpers
-│   │   ├── services/             # Axios endpoint adapters
-│   │   ├── types/                # Types definitions
-│   │   └── utils/                # Common client helpers
-│   ├── vite.config.js            # Vite setup
-│   └── tailwind.config.js        # Design tokens config
-│
-├── docs/                         # Architecture documentation
-├── .env.example                  # Root workspace config templates
-└── package.json                  # Root monorepo workspace router
-```
+### Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **npm**: v9.0.0 or higher
+- **MongoDB**: v6.0 or higher (Local or MongoDB Atlas)
 
----
-
-## ⚙️ Environment Variables
-
-### Backend Configuration (`backend/.env.example`)
-*   `PORT`: Gateway execution port (default `5000`)
-*   `MONGODB_URI`: MongoDB Atlas connection endpoint
-*   `JWT_SECRET`: Security passphrase for signing JSON Web Tokens
-*   `CLIENT_URL`: Client endpoint for CORS configurations
-
-### Frontend Configuration (`frontend/.env.example`)
-*   `VITE_API_URL`: Endpoint of backend server (default `http://localhost:5000/api`)
-
----
-
-## 🚀 Getting Started
-
-### 1. Installation
-To install all required backend and frontend packages concurrently, run the following command from the root workspace directory:
+### 1. Repository Setup
 ```bash
-npm run install-all
+git clone https://github.com/MahaAswin/TaskPilot_AI.git
+cd TaskPilot_AI
 ```
 
-### 2. Execution Commands
-To run the client and server dev platforms concurrently:
+### 2. Environment Configuration
+Copy the environment variable templates:
 ```bash
+cp .env.example .env
+cp frontend/.env.example frontend/.env
+```
+
+### 3. Install & Start Backend
+```bash
+cd backend
+npm install
 npm run dev
+# Backend server runs on http://localhost:5000
 ```
 
-*To run them separately in individual console tabs:*
-*   **Run Backend Only:** `npm run server`
-*   **Run Frontend Only:** `npm run client`
+### 4. Install & Start Frontend
+```bash
+cd ../frontend
+npm install
+npm run dev
+# Frontend web app runs on http://localhost:5173
+```
 
 ---
 
-## 🔮 Future Modules Extensibility
+## 🐳 Docker Deployment
 
-The scaffolding is built for future enhancements:
-1.  **AI Orchestrator (`backend/agents/`)**: Sub-agents can extend `BaseAgent.js` to define execution scripts.
-2.  **Schema Hook Bindings (`backend/models/`)**: Business validations and password crypt hashes can be mapped directly onto mongoose schemas.
-3.  **Client Integrations (`frontend/src/services/`)**: Axios client adapters can be placed to fetch route placeholders dynamically.
+To launch the full stack (MongoDB, Backend, Nginx Frontend) in multi-container environment:
+
+```bash
+docker-compose up --build -d
+```
+- **Frontend App**: `http://localhost:80`
+- **Backend API**: `http://localhost:5000`
+- **Health Check**: `http://localhost:5000/health`
+
+---
+
+## ☁️ Cloud Deployment Setup
+
+### Frontend Deployment (Vercel)
+The repository includes a pre-configured `frontend/vercel.json` file. Connect your GitHub repository to Vercel and specify:
+- **Root Directory**: `frontend`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+
+### Backend Deployment (Render)
+The repository includes a pre-configured `render.yaml` Blueprint file for Render. Define environment variables in Render Dashboard:
+- `MONGODB_URI`: MongoDB Atlas connection string
+- `JWT_SECRET`: Secret JWT signing key
+
+---
+
+## 🧪 Testing Suite
+
+Run backend and frontend smoke test suites:
+
+```bash
+# Test backend core engines
+cd backend
+npm test
+
+# Test frontend components
+cd ../frontend
+npm test
+```
+
+---
+
+## 📄 License & Contributing
+
+TaskPilot AI is open-source under the MIT License. Contributions are welcome!

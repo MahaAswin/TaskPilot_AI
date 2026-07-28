@@ -61,6 +61,13 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // REST Api Mappings
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'UP', service: 'TaskPilot AI Backend', timestamp: new Date().toISOString() });
+});
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'UP', service: 'TaskPilot AI Backend API', timestamp: new Date().toISOString() });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/ai', aiRoutes);

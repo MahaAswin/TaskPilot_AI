@@ -29,6 +29,7 @@ import SkillCenter from '../pages/skills/SkillCenter';
 import ProductivityCenter from '../pages/productivity/ProductivityCenter';
 import OrchestratorCenter from '../pages/orchestrator/OrchestratorCenter';
 import AIProviderCenter from '../pages/ai/AIProviderCenter';
+import NotFound from '../pages/error/NotFound';
 
 export const AppRoutes = () => {
   return (
@@ -70,8 +71,9 @@ export const AppRoutes = () => {
         <Route path="/planning-canvas-full" element={<PlanningCanvasPage />} />
       </Route>
 
-      {/* Fallback to homepage */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Error Fallback Pages */}
+      <Route path="/404" element={<NotFound />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
