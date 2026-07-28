@@ -2,13 +2,14 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, Cpu, Calendar, CheckSquare, 
-  GraduationCap, Palette, BarChart3, User, Settings, BookOpen, Sparkles, Brain, Zap 
+  GraduationCap, Palette, BarChart3, User, Settings, BookOpen, Sparkles, Brain, Zap, Network 
 } from 'lucide-react';
 
 export const Sidebar = () => {
   const links = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/workspace', label: 'AI Workspace', icon: Cpu },
+    { to: '/orchestrator', label: 'Agent Orchestrator', icon: Network },
     { to: '/planning-canvas', label: 'AI Planning Canvas', icon: Sparkles },
     { to: '/planner', label: 'Plan Matrix', icon: Calendar },
     { to: '/tasks', label: 'Tasks Queue', icon: CheckSquare },
