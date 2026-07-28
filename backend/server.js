@@ -27,6 +27,7 @@ import learningRoutes from './routes/learningRoutes.js';
 import planningRoutes from './routes/planningRoutes.js';
 import skillRoutes from './routes/skillRoutes.js';
 import orchestratorRoutes from './routes/orchestratorRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,6 +63,7 @@ if (process.env.NODE_ENV !== 'production') {
 // REST Api Mappings
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/ai', aiRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/planner', plannerRoutes);
 app.use('/api/planning', planningRoutes);

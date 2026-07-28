@@ -10,6 +10,7 @@ export const Sidebar = () => {
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/workspace', label: 'AI Workspace', icon: Cpu },
     { to: '/orchestrator', label: 'Agent Orchestrator', icon: Network },
+    { to: '/ai-providers', label: 'AI Providers', icon: Sparkles },
     { to: '/planning-canvas', label: 'AI Planning Canvas', icon: Sparkles },
     { to: '/planner', label: 'Plan Matrix', icon: Calendar },
     { to: '/tasks', label: 'Tasks Queue', icon: CheckSquare },

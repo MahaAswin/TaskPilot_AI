@@ -28,6 +28,7 @@ import PlanningCanvasPage from '../pages/planner/PlanningCanvasPage';
 import SkillCenter from '../pages/skills/SkillCenter';
 import ProductivityCenter from '../pages/productivity/ProductivityCenter';
 import OrchestratorCenter from '../pages/orchestrator/OrchestratorCenter';
+import AIProviderCenter from '../pages/ai/AIProviderCenter';
 
 export const AppRoutes = () => {
   return (
@@ -54,6 +55,7 @@ export const AppRoutes = () => {
         <Route path="/skills" element={<SkillCenter />} />
         <Route path="/productivity" element={<ProductivityCenter />} />
         <Route path="/orchestrator" element={<OrchestratorCenter />} />
+        <Route path="/ai-providers" element={<AIProviderCenter />} />
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/learning" element={<Learning />} />
         <Route path="/creative" element={<Creative />} />
