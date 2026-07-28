@@ -9,7 +9,7 @@ const taskSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      required: [true, 'Task title is required'],
+      required: true,
       trim: true,
     },
     description: {
@@ -27,16 +27,11 @@ const taskSchema = new mongoose.Schema(
       enum: ['low', 'medium', 'high'],
       default: 'medium',
     },
-    dueDate: {
-      type: Date,
-      default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // Default 1 day from now
-    },
     category: {
       type: String,
       default: 'General',
-      trim: true,
     },
-    completedAt: {
+    dueDate: {
       type: Date,
     }
   },
@@ -45,17 +40,5 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
-// Auto-populate completedAt when state shifts to completed
-taskSchema.pre('save', function (next) {
-  if (this.isModified('status')) {
-    if (this.status === 'completed') {
-      this.completedAt = new Date();
-    } else {
-      this.completedAt = undefined;
-    }
-  }
-  next();
-});
-
-const Task = mongoose.model('Task', taskSchema);
+export const Task = mongoose.model('Task', taskSchema);
 export default Task;

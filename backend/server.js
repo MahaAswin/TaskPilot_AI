@@ -1,59 +1,75 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import helmet from 'helmet';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import connectDB from './config/db.js';
-import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import connectDB from './database/connection.js';
+import loggerMiddleware from './middleware/loggerMiddleware.js';
+import notFound from './middleware/notFoundMiddleware.js';
+import errorHandler from './middleware/errorMiddleware.js';
 
+// Route imports
 import authRoutes from './routes/authRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
+import plannerRoutes from './routes/plannerRoutes.js';
+import knowledgeRoutes from './routes/knowledgeRoutes.js';
+import creativeRoutes from './routes/creativeRoutes.js';
 import productivityRoutes from './routes/productivityRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
 
-// Setup __dirname equivalent in ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load env configuration from root workspace path first, fallback to local backend path
+// Load env configuration
 dotenv.config({ path: path.join(__dirname, '../.env') });
 dotenv.config();
 
-// Connect to MongoDB Database
+// Mongoose Connection
 connectDB();
 
 const app = express();
 
-// Middlewares
+// Security Middlewares
+app.use(helmet());
+app.use(compression());
+app.use(cookieParser());
 app.use(cors({
-  origin: true, // Allow all origins in development, easy to configure
+  origin: process.env.CLIENT_URL || true,
   credentials: true
 }));
-app.use(express.json());
 
+// Request Parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Access Logging
+app.use(loggerMiddleware);
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
-// Health Check API
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'healthy', timestamp: new Date(), app: 'TaskPilot AI Backend' });
-});
-
-// Map API Routes
+// REST Api Mappings
 app.use('/api/auth', authRoutes);
-app.use('/api/chats', chatRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/planner', plannerRoutes);
+app.use('/api/knowledge', knowledgeRoutes);
+app.use('/api/creative', creativeRoutes);
 app.use('/api/productivity', productivityRoutes);
+app.use('/api/profile', profileRoutes);
 
-// Fallback Middleware mappings
+// Fallbacks
 app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`[Server] TaskPilot AI backend listening on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  console.log(`[Server] TaskPilot AI enterprise server listening on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });

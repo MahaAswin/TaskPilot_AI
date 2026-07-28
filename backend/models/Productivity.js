@@ -7,34 +7,27 @@ const productivitySchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    date: {
-      type: String, // format YYYY-MM-DD
-      required: true,
-    },
     score: {
       type: Number,
       required: true,
-      min: 0,
-      max: 100,
-      default: 70,
+      default: 70
     },
-    tasksCompletedCount: {
+    date: {
+      type: String, // YYYY-MM-DD
+      required: true
+    },
+    completedTasksCount: {
       type: Number,
-      default: 0,
-    },
-    weeklySuggestions: [
-      {
-        type: String,
-      }
-    ]
+      default: 0
+    }
   },
   {
     timestamps: true,
   }
 );
 
-// Unique compound key for user per date
+// Create compound unique index for user per day
 productivitySchema.index({ user: 1, date: 1 }, { unique: true });
 
-const Productivity = mongoose.model('Productivity', productivitySchema);
+export const Productivity = mongoose.model('Productivity', productivitySchema);
 export default Productivity;

@@ -16,31 +16,12 @@ const messageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    images: [
-      {
-        url: String,
-        prompt: String,
-      }
-    ],
     agentTraces: [
       {
-        agentName: {
-          type: String,
-          required: true,
-        },
-        status: {
-          type: String,
-          enum: ['thinking', 'working', 'completed', 'failed', 'generating'],
-          default: 'thinking',
-        },
-        message: {
-          type: String,
-          default: '',
-        },
-        timestamp: {
-          type: Date,
-          default: Date.now,
-        }
+        agentName: String,
+        status: String,
+        message: String,
+        timestamp: { type: Date, default: Date.now }
       }
     ]
   },
@@ -49,5 +30,5 @@ const messageSchema = new mongoose.Schema(
   }
 );
 
-const Message = mongoose.model('Message', messageSchema);
+export const Message = mongoose.model('Message', messageSchema);
 export default Message;

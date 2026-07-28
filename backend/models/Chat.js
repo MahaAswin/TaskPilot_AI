@@ -11,13 +11,13 @@ const chatSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      default: 'New Conversation',
-    },
+      default: 'New Conversation'
+    }
   },
   {
     timestamps: true,
   }
 );
 
-const Chat = mongoose.model('Chat', chatSchema);
+export const Chat = mongoose.model('Chat', chatSchema);
 export default Chat;

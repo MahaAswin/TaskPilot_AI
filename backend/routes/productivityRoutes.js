@@ -1,17 +1,12 @@
 import express from 'express';
-import {
-  getDashboardSummary,
-  getProductivityHistory,
-  triggerCoachReport,
-} from '../controllers/productivityController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { getChartHistory, getCoachReport } from '../controllers/productivityController.js';
+import protect from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.use(protect); // Secure all productivity analytics endpoints
+router.use(protect); // Secure metrics endpoints
 
-router.get('/dashboard', getDashboardSummary);
-router.get('/history', getProductivityHistory);
-router.post('/coach-report', triggerCoachReport);
+router.get('/history', getChartHistory);
+router.post('/coach', getCoachReport);
 
 export default router;
