@@ -25,6 +25,7 @@ import Profile from '../pages/profile/Profile';
 import Settings from '../pages/settings/Settings';
 
 import PlanningCanvasPage from '../pages/planner/PlanningCanvasPage';
+import SkillCenter from '../pages/skills/SkillCenter';
 
 export const AppRoutes = () => {
   return (
@@ -48,10 +49,11 @@ export const AppRoutes = () => {
         <Route path="/planner" element={<Planner />} />
         <Route path="/planning-canvas" element={<PlanningCanvasPage />} />
         <Route path="/tasks" element={<Tasks />} />
+        <Route path="/skills" element={<SkillCenter />} />
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/learning" element={<Learning />} />
         <Route path="/creative" element={<Creative />} />
-        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/analytics" element={<SkillCenter />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
