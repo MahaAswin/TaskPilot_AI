@@ -1,0 +1,22 @@
+{
+  "name": "taskpilot-ai-workspace",
+  "version": "1.0.0",
+  "description": "TaskPilot AI Workspace - Multi-Agent Productivity OS",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install-all": "npm install && npm run install-backend && npm run install-frontend",
+    "install-backend": "npm install --prefix backend",
+    "install-frontend": "npm install --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "npm run dev --prefix backend",
+    "client": "npm run dev --prefix frontend",
+    "build-all": "npm run build --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
