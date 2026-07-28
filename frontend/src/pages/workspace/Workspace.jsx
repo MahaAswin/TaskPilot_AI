@@ -224,26 +224,22 @@ export const Workspace = () => {
     try {
       const res = await axios.post(`/chat/${activeChatId}/message`, { prompt: text });
       if (res.data?.success) {
-        // Mock stream delay to display multi-agent step run sequences
-        setTimeout(() => {
-          setMessages(prev => [...prev, res.data.data]);
-          setActiveTraces(res.data.data.agentTraces || []);
-          setIsChatLoading(false);
-          setIsTimelineThinking(false);
-          
-          // Switch to corresponding preview tabs based on query keywords
-          const lower = text.toLowerCase();
-          if (lower.includes('roadmap') || lower.includes('plan')) {
-            setActiveTab('tasks');
-          } else if (lower.includes('quiz')) {
-            setActiveTab('quiz');
-          } else if (lower.includes('chart') || lower.includes('mindmap')) {
-            setActiveTab('notes');
-          }
-        }, 1500);
+        setMessages(prev => [...prev, res.data.data]);
+        setActiveTraces(res.data.data.agentTraces || []);
+        
+        // Switch to corresponding preview tabs based on query keywords
+        const lower = text.toLowerCase();
+        if (lower.includes('roadmap') || lower.includes('plan')) {
+          setActiveTab('tasks');
+        } else if (lower.includes('quiz')) {
+          setActiveTab('quiz');
+        } else if (lower.includes('chart') || lower.includes('mindmap')) {
+          setActiveTab('notes');
+        }
       }
     } catch (err) {
       showError('Failed to route query through Coordinator.');
+    } finally {
       setIsChatLoading(false);
       setIsTimelineThinking(false);
     }

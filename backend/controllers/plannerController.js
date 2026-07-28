@@ -257,10 +257,30 @@ export const createRevision = asyncHandler(async (req, res, next) => {
   return ApiResponse.created(res, revision, 'Revision plan created');
 });
 
-// ─── GENERATE ROADMAP (coordinator agent placeholder) ──────────────────────
+import { globalProviderManager } from '../providers/ProviderManager.js';
+
+// ─── GENERATE ROADMAP (Gemini AI Provider) ──────────────────────────────────
 export const generateRoadmap = asyncHandler(async (req, res, next) => {
-  const { topic } = req.body;
-  return ApiResponse.success(res, { topic, steps: [] }, 'Roadmap generation placeholder — AI integration pending');
+  const { topic, goal } = req.body;
+  const targetGoal = goal || topic || 'Software Engineer Career Roadmap';
+
+  const providerResult = await globalProviderManager.executeMethod('generateRoadmap', targetGoal);
+
+  let roadmapData = {};
+  try {
+    roadmapData = typeof providerResult.response === 'string' ? JSON.parse(providerResult.response) : providerResult.response;
+  } catch {
+    roadmapData = { goal: targetGoal, milestones: [] };
+  }
+
+  const newRoadmap = await Roadmap.create({
+    userId: req.user._id,
+    title: targetGoal,
+    type: 'learning',
+    steps: Array.isArray(roadmapData.milestones) ? roadmapData.milestones.map(m => m.title || m.description) : [targetGoal]
+  });
+
+  return ApiResponse.created(res, { roadmap: newRoadmap, data: roadmapData }, 'Roadmap generated successfully via Gemini AI');
 });
 
 export default { createPlan, getAllPlans, updatePlan, deletePlan, getCalendarEvents, createCalendarEvent, getGoals, createGoal, getRoadmaps, createRoadmap, getRevisions, createRevision, generateRoadmap };

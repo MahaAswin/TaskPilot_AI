@@ -7,15 +7,15 @@ import { PROVIDERS_LIST } from '../../constants/aiMockData';
 export const SettingsPanel = () => {
   const { showSuccess } = useToast();
 
-  const [selectedProviderId, setSelectedProviderId] = useState('gemini');
+  const [selectedProviderId, setSelectedProviderId] = useState('grok');
   const [apiKey, setApiKey] = useState('••••••••••••••••••••••••');
-  const [baseUrl, setBaseUrl] = useState('https://generativelanguage.googleapis.com/v1beta');
+  const [baseUrl, setBaseUrl] = useState('https://api.x.ai/v1');
   const [timeout, setTimeoutVal] = useState(10000);
   const [retryCount, setRetryCount] = useState(3);
   const [priority, setPriority] = useState(1);
   const [maxTokens, setMaxTokens] = useState(2048);
   const [temperature, setTemperature] = useState(0.7);
-  const [model, setModel] = useState('gemini-1.5-pro');
+  const [model, setModel] = useState('grok-beta');
 
   const handleSave = (e) => {
     e.preventDefault();

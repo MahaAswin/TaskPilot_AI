@@ -2,20 +2,20 @@ import axios from 'axios';
 import { BaseProvider } from './BaseProvider.js';
 import { PromptBuilder } from './PromptBuilder.js';
 
-export class GrokProvider extends BaseProvider {
+export class OpenRouterProvider extends BaseProvider {
   constructor(config = {}) {
-    super({ name: 'Grok', model: config.model || 'grok-beta', ...config });
-    this.apiKey = config.apiKey || process.env.GROK_API_KEY || process.env.XAI_API_KEY || '';
-    this.baseURL = 'https://api.x.ai/v1/chat/completions';
+    super({ name: 'OpenRouter', model: config.model || 'meta-llama/llama-3.1-8b-instruct:free', ...config });
+    this.apiKey = config.apiKey || process.env.OPENROUTER_API_KEY || '';
+    this.baseURL = 'https://openrouter.ai/api/v1/chat/completions';
   }
 
   async isHealthy() {
     return !!this.apiKey;
   }
 
-  async _callGrok(promptText) {
+  async _callOpenRouter(promptText) {
     if (!this.apiKey) {
-      throw new Error('GROK_API_KEY is missing in environment variables');
+      throw new Error('OPENROUTER_API_KEY is missing in environment variables');
     }
 
     const response = await axios.post(
@@ -27,6 +27,8 @@ export class GrokProvider extends BaseProvider {
       {
         headers: {
           Authorization: `Bearer ${this.apiKey}`,
+          'HTTP-Referer': 'https://taskpilot.ai',
+          'X-Title': 'TaskPilot AI',
           'Content-Type': 'application/json'
         },
         timeout: 10000
@@ -35,95 +37,91 @@ export class GrokProvider extends BaseProvider {
 
     const text = response.data?.choices?.[0]?.message?.content;
     if (!text) {
-      throw new Error('Grok API returned empty content');
+      throw new Error('OpenRouter API returned empty response content');
     }
     return text;
   }
 
   _parseJSON(text) {
-    if (!text) throw new Error('Empty response received from Grok');
+    if (!text) throw new Error('Empty response received from OpenRouter');
     const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim();
     return JSON.parse(cleaned);
   }
 
   _cleanMermaid(text) {
-    if (!text) throw new Error('Empty response received from Grok');
+    if (!text) throw new Error('Empty response received from OpenRouter');
     let cleaned = text.replace(/```mermaid/gi, '').replace(/```/g, '').trim();
     if (!cleaned.startsWith('graph')) {
-      cleaned = `graph TD;\n  A[Grok Output] --> B[${text.slice(0, 30)}...];`;
+      cleaned = `graph TD;\n  A[OpenRouter Output] --> B[${text.slice(0, 30)}...];`;
     }
     return cleaned;
   }
 
   async chat(messages, options = {}) {
     const promptText = PromptBuilder.chatPrompt(messages);
-    return await this._callGrok(promptText);
-  }
-
-  async generateText(prompt, options = {}) {
-    return await this._callGrok(prompt);
+    return await this._callOpenRouter(promptText);
   }
 
   async summarize(text, options = {}) {
     const promptText = PromptBuilder.summaryPrompt(text);
-    return await this._callGrok(promptText);
+    return await this._callOpenRouter(promptText);
   }
 
   async generateNotes(topic, options = {}) {
     const promptText = PromptBuilder.notesPrompt(topic);
-    return await this._callGrok(promptText);
+    return await this._callOpenRouter(promptText);
   }
 
   async generateQuiz(topic, options = {}) {
     const promptText = PromptBuilder.quizPrompt(topic);
-    const raw = await this._callGrok(promptText);
+    const raw = await this._callOpenRouter(promptText);
     return this._parseJSON(raw);
   }
 
   async generateFlashcards(topic, options = {}) {
     const promptText = PromptBuilder.flashcardsPrompt(topic);
-    const raw = await this._callGrok(promptText);
+    const raw = await this._callOpenRouter(promptText);
     return this._parseJSON(raw);
   }
 
   async generateStudyPlan(topic, options = {}) {
     const promptText = PromptBuilder.studyPlanPrompt(topic);
-    const raw = await this._callGrok(promptText);
+    const raw = await this._callOpenRouter(promptText);
     return this._parseJSON(raw);
   }
 
   async generateRoadmap(goal, options = {}) {
     const promptText = PromptBuilder.roadmapPrompt(goal);
-    const raw = await this._callGrok(promptText);
+    const raw = await this._callOpenRouter(promptText);
     return this._parseJSON(raw);
   }
 
   async generateTasks(goal, options = {}) {
     const promptText = PromptBuilder.tasksPrompt(goal);
-    const raw = await this._callGrok(promptText);
+    const raw = await this._callOpenRouter(promptText);
     return this._parseJSON(raw);
   }
 
   async explainTopic(topic, options = {}) {
     const promptText = PromptBuilder.explainPrompt(topic);
-    return await this._callGrok(promptText);
+    return await this._callOpenRouter(promptText);
   }
 
   async generateInterviewQuestions(topic, options = {}) {
     const promptText = PromptBuilder.interviewPrompt(topic);
-    const raw = await this._callGrok(promptText);
+    const raw = await this._callOpenRouter(promptText);
     return this._parseJSON(raw);
   }
 
   async generateMermaidDiagram(topic, options = {}) {
     const promptText = PromptBuilder.diagramPrompt(topic);
-    const raw = await this._callGrok(promptText);
+    const raw = await this._callOpenRouter(promptText);
     return this._cleanMermaid(raw);
   }
 
   async generateMindMapJSON(topic, options = {}) {
     const promptText = PromptBuilder.mindmapPrompt(topic);
-    const raw = await this._callGrok(promptText);
+    const raw = await this._callOpenRouter(promptText);
     return this._parseJSON(raw);
   }
 
@@ -132,4 +130,4 @@ export class GrokProvider extends BaseProvider {
   }
 }
 
-export default GrokProvider;
+export default OpenRouterProvider;

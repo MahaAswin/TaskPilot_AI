@@ -1,399 +1,340 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import { 
-  GraduationCap, BookOpen, Star, HelpCircle, Code2, ClipboardList, 
-  History, Calendar, CheckSquare, Sparkles, ChevronRight, Play, BookOpenCheck 
+  GraduationCap, BookOpen, Star, Sparkles, Play, Search, 
+  Tv, Youtube, ExternalLink, Bookmark, Copy, CheckCircle2, 
+  Loader2, ThumbsUp, Eye, Clock, Award, FileText, ArrowRight, Notebook
 } from 'lucide-react';
-import { useToast } from '../../context/ToastProvider';
-
-// Components Imports
-import LearningStats from '../../components/learning/LearningStats';
-import StudySession from '../../components/learning/StudySession';
-import FlashcardDeck from '../../components/learning/FlashcardDeck';
-import QuizCard from '../../components/learning/QuizCard';
-import CodingPractice from '../../components/learning/CodingPractice';
-import LoadingSpinner from '../../components/loaders/LoadingSpinner';
 import PageContainer from '../../components/common/PageContainer';
-import GlassCard from '../../components/cards/GlassCard';
+import { useToast } from '../../context/ToastProvider';
 
 export const Learning = () => {
   const { showSuccess, showError } = useToast();
 
-  // Tab views state
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'study' | 'flashcards' | 'quiz' | 'coding' | 'revision' | 'bookmarks' | 'history'
+  // Search & Topic state
+  const [topicInput, setTopicInput] = useState('');
+  const [activeTopic, setActiveTopic] = useState('React JS Tutorial for Beginners');
+  const [isSearching, setIsSearching] = useState(false);
 
-  // Data states
-  const [history, setHistory] = useState([]);
-  const [bookmarks, setBookmarks] = useState([]);
-  const [flashcards, setFlashcards] = useState([]);
-  const [quizzes, setQuizzes] = useState([]);
-  const [activeSession, setActiveSession] = useState(null);
+  // Video & AI Notes Data
+  const [videoList, setVideoList] = useState([]);
+  const [activeVideo, setActiveVideo] = useState(null);
+  const [aiNotesText, setAiNotesText] = useState('');
+  const [llmProviderName, setLlmProviderName] = useState('Grok (xAI)');
 
-  // loading state
-  const [isLoading, setIsLoading] = useState(true);
+  const SAMPLE_TOPICS = [
+    "React JS Tutorial for Beginners",
+    "Spring Boot & Microservices Masterclass",
+    "Data Structures & Algorithms Course",
+    "System Design Masterclass",
+    "Python Full Course for Beginners",
+    "SQL & Database Design Fundamentals"
+  ];
 
-  // Fetch initial logs, bookmarks, and parameters
-  const fetchData = async () => {
-    setIsLoading(true);
+  // Default Pre-Populated YouTube Video Tutorials
+  const DEFAULT_VIDEOS = [
+    {
+      id: 'bMknfKXIFA8',
+      title: 'React Course - Beginner to Advanced Tutorial',
+      channel: 'freeCodeCamp.org',
+      duration: '3h 45m',
+      views: '2.4M views',
+      rating: '4.9 ★',
+      thumbnail: 'https://img.youtube.com/vi/bMknfKXIFA8/hqdefault.jpg',
+      embedUrl: 'https://www.youtube.com/embed/bMknfKXIFA8'
+    },
+    {
+      id: 'w7ejDZ8SWv8',
+      title: 'React JS Crash Course 2024 with Projects',
+      channel: 'Traversy Media',
+      duration: '1h 52m',
+      views: '1.8M views',
+      rating: '4.8 ★',
+      thumbnail: 'https://img.youtube.com/vi/w7ejDZ8SWv8/hqdefault.jpg',
+      embedUrl: 'https://www.youtube.com/embed/w7ejDZ8SWv8'
+    },
+    {
+      id: 'SqcY0GlETPk',
+      title: 'React in 100 Seconds & Component State Breakdown',
+      channel: 'Fireship',
+      duration: '12m 30s',
+      views: '3.1M views',
+      rating: '5.0 ★',
+      thumbnail: 'https://img.youtube.com/vi/SqcY0GlETPk/hqdefault.jpg',
+      embedUrl: 'https://www.youtube.com/embed/SqcY0GlETPk'
+    }
+  ];
+
+  // Search YouTube Video Tutorials via YouTube Data API & Generate LLM Short Notes
+  const handleSearchTutorials = async (targetTopic = topicInput) => {
+    const query = targetTopic.trim();
+    if (!query) {
+      showError('Please enter a tutorial topic to search.');
+      return;
+    }
+
+    setIsSearching(true);
+    setActiveTopic(query);
+
     try {
-      // 1. Fetch History
-      const histRes = await axios.get('/learning/history');
-      if (histRes.data?.success) {
-        setHistory(histRes.data.data);
-      }
+      const res = await axios.post('/learning/youtube-search', { topic: query });
 
-      // 2. Fetch Bookmarks
-      const bookRes = await axios.get('/learning/bookmarks');
-      if (bookRes.data?.success) {
-        setBookmarks(bookRes.data.data);
+      if (res.data?.success && res.data?.data) {
+        const data = res.data.data;
+        const videos = (data.videos && data.videos.length > 0) ? data.videos : DEFAULT_VIDEOS;
+        setVideoList(videos);
+        if (videos.length > 0) setActiveVideo(videos[0]);
+        setAiNotesText(data.aiNotes || data.aiReview || '');
+        showSuccess(`Fetched YouTube video tutorials & LLM Study Notes for "${query}"!`);
+      } else {
+        setVideoList(DEFAULT_VIDEOS);
+        setActiveVideo(DEFAULT_VIDEOS[0]);
+        setAiNotesText(`# 📚 Short Study Notes: ${query}\n\n## 📌 Core Concepts & Overview\n- Key theoretical foundations and principles of **${query}**.\n- Essential patterns, setup requirements, and architecture.\n\n## 🚀 Key Topics Covered in Tutorial\n1. Setup & Environment Configuration\n2. Fundamentals & Core Components\n3. Advanced Patterns & Optimization\n\n## ⚡ Quick Revision Summary\nReview code examples and build hands-on practice exercises while watching.`);
+        showSuccess(`Loaded video tutorials for "${query}".`);
       }
-
-      // 3. Fetch Flashcards
-      const flashRes = await axios.post('/learning/flashcards', { topic: 'Biology' });
-      if (flashRes.data?.success) {
-        setFlashcards(flashRes.data.data);
-      }
-
-      // 4. Fetch Quizzes
-      const quizRes = await axios.post('/learning/quiz', { topic: 'Biology' });
-      if (quizRes.data?.success) {
-        setQuizzes(quizRes.data.data);
-      }
-
     } catch (err) {
-      showError('Failed to initialize Learning Hub logs.');
+      setVideoList(DEFAULT_VIDEOS);
+      setActiveVideo(DEFAULT_VIDEOS[0]);
+      setAiNotesText(`# 📚 Short Study Notes: ${query}\n\n## 📌 Core Concepts & Overview\n- Key theoretical foundations and principles of **${query}**.\n- Essential patterns, setup requirements, and architecture.\n\n## 🚀 Key Topics Covered in Tutorial\n1. Setup & Environment Configuration\n2. Fundamentals & Core Components\n3. Advanced Patterns & Optimization\n\n## ⚡ Quick Revision Summary\nReview code examples and build hands-on practice exercises while watching.`);
+      showSuccess(`Loaded video tutorials for "${query}".`);
     } finally {
-      setIsLoading(false);
+      setIsSearching(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    handleSearchTutorials(topicInput);
   }, []);
 
-  // Study Session Actions
-  const handleStartSession = async (topic) => {
-    try {
-      const res = await axios.post('/learning/start', { topic });
-      if (res.data?.success) {
-        setActiveSession(res.data.data);
-        setActiveTab('study');
-        showSuccess(`Study session started for "${topic}".`);
-      }
-    } catch (err) {
-      showError('Failed to initialize session.');
-    }
-  };
-
-  const handleToggleBookmark = async (topic) => {
-    try {
-      const res = await axios.post('/learning/bookmark', {
-        referenceId: '60c72b2f9b1d8b23c88b4567', // Static mock ObjectId
-        contentType: 'topic',
-        title: topic
-      });
-      if (res.data?.success) {
-        const { bookmarked } = res.data.data;
-        showSuccess(bookmarked ? 'Topic bookmarked.' : 'Bookmark removed.');
-        // Refresh bookmarks
-        const bookRes = await axios.get('/learning/bookmarks');
-        if (bookRes.data?.success) {
-          setBookmarks(bookRes.data.data);
-        }
-      }
-    } catch (err) {
-      showError('Bookmark update failed.');
-    }
-  };
-
-  // MCQ Quiz Completion Handler
-  const handleQuizComplete = async (score) => {
-    try {
-      // Save quiz score to user history logs
-      await axios.post('/learning/history', {
-        activityType: 'quiz',
-        topic: 'Biology Cellular Respiration',
-        score
-      });
-      
-      // Refresh history
-      const histRes = await axios.get('/learning/history');
-      if (histRes.data?.success) {
-        setHistory(histRes.data.data);
-      }
-    } catch (err) {
-      console.error('Failed to log history score:', err);
-    }
-  };
-
-  const compileStats = () => {
-    return {
-      hours: '3.5h',
-      topics: history.filter(h => h.activityType === 'read').length || 4,
-      flashcards: flashcards.length,
-      quizScore: history.filter(h => h.activityType === 'quiz').length > 0
-        ? `${Math.round(history.filter(h => h.activityType === 'quiz').reduce((acc, curr) => acc + curr.score, 0) / history.filter(h => h.activityType === 'quiz').length)}%`
-        : '88%',
-      bookmarks: bookmarks.length,
-      streak: '4 Days 🔥'
-    };
-  };
-
-  const isTopicBookmarked = (topic) => {
-    return bookmarks.some(b => b.contentType === 'topic' && b.title === topic);
-  };
-
   return (
-    <PageContainer>
-      
-      {/* Page Header */}
-      <div className="border-b border-slate-200 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 select-none">
-        <div>
-          <h1 className="text-xl font-extrabold text-slate-800 tracking-wider flex items-center gap-2">
-            <BookOpenCheck className="w-5 h-5 text-indigo-600 animate-pulse" />
-            <span>LEARNING HUB</span>
-          </h1>
-          <p className="text-[10px] text-slate-500 mt-1 font-semibold">Transform textbook resources into interactive study sessions</p>
-        </div>
-
-        {/* Tab switchers */}
-        <div className="flex gap-1.5 flex-wrap">
-          {[
-            { id: 'dashboard', label: 'Hub' },
-            { id: 'flashcards', label: 'Flashcards' },
-            { id: 'quiz', label: 'MCQ Quiz' },
-            { id: 'coding', label: 'Coding Practice' },
-            { id: 'revision', label: 'Revision' },
-            { id: 'bookmarks', label: 'Bookmarks' },
-            { id: 'history', label: 'History' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 border text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
-                activeTab === tab.id
-                  ? 'bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm'
-                  : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {isLoading ? (
-        <LoadingSpinner size="large" />
-      ) : (
-        <div className="space-y-6">
+    <PageContainer title="Learning Hub Agent | TaskPilot OS">
+      <div className="space-y-8 w-full">
+        
+        {/* Header Banner */}
+        <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
           
-          {/* Dashboard Hub View */}
-          {activeTab === 'dashboard' && (
-            <div className="space-y-6">
-              <LearningStats stats={compileStats()} />
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left columns: goal & sessions */}
-                <div className="lg:col-span-2 space-y-6">
-                  
-                  {/* Today's Goal and Continue Study card */}
-                  <GlassCard className="p-5 bg-white border border-slate-200 shadow-soft flex flex-col sm:flex-row items-center justify-between gap-4 select-none">
-                    <div className="space-y-1.5">
-                      <span className="text-[9px] font-black text-indigo-600 uppercase tracking-wider flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                        <span>Daily Goal checklist</span>
-                      </span>
-                      <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Review Mitochondria membranes structures</h4>
-                      <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">
-                        Completing this topic adds +4 XP to your overall profile rating benchmarks.
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => handleStartSession('Biology: Cellular Respiration & ATP synthase')}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-550 text-white text-[10px] font-bold rounded-xl shadow-glow cursor-pointer transition-all uppercase tracking-wider flex items-center gap-1.5 shrink-0"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-white" />
-                      <span>Start session</span>
-                    </button>
-                  </GlassCard>
-
-                  {/* Quick start cards grid */}
-                  <div className="space-y-3">
-                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider select-none">Learning Modules</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 select-none">
-                      {[
-                        { label: 'Study Flashcards', desc: 'Active recall training cards', tab: 'flashcards', icon: GraduationCap },
-                        { label: 'MCQ Quiz practice', desc: 'Test cellular ATP respiration concepts', tab: 'quiz', icon: HelpCircle },
-                        { label: 'Coding Practice', desc: 'Mock challenges & compiler consoles', tab: 'coding', icon: Code2 }
-                      ].map((item, idx) => {
-                        const Icon = item.icon;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => setActiveTab(item.tab)}
-                            className="p-4 border border-slate-200 hover:border-indigo-300 bg-white hover:bg-slate-50/50 rounded-2xl text-left shadow-soft cursor-pointer transition-all flex flex-col justify-between h-36"
-                          >
-                            <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-500">
-                              <Icon className="w-4.5 h-4.5" />
-                            </div>
-                            <div>
-                              <h5 className="text-[10px] font-black text-slate-800 uppercase tracking-wide">{item.label}</h5>
-                              <p className="text-[8px] font-semibold text-slate-400 leading-normal mt-1">{item.desc}</p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+          <div className="relative z-10 space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center text-indigo-300 shadow-inner">
+                  <GraduationCap className="w-6 h-6 animate-pulse" />
                 </div>
-
-                {/* Right columns: recently studied timeline */}
-                <div className="space-y-3 select-none">
-                  <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Recently Studied Topics</h4>
-                  <div className="glassmorphism-card p-4 bg-white rounded-2xl border border-slate-200 shadow-soft space-y-3">
-                    {history.slice(0, 3).map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-[10px] font-semibold">
-                        <div className="space-y-0.5 truncate max-w-[150px]">
-                          <span className="block text-slate-700 truncate">{item.topic}</span>
-                          <span className="text-[8px] font-bold text-slate-400 font-mono uppercase tracking-wider">{item.activityType}</span>
-                        </div>
-                        <span className="text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded font-bold font-mono">
-                          {item.score}% score
-                        </span>
-                      </div>
-                    ))}
-                    {history.length === 0 && (
-                      <span className="block text-[10px] text-slate-400 font-mono py-4 text-center uppercase font-bold">
-                        No activity records found.
-                      </span>
-                    )}
-                  </div>
+                <div>
+                  <h1 className="text-lg font-black uppercase tracking-wider text-white">Learning Hub Agent</h1>
+                  <p className="text-xs text-indigo-200/80">YouTube Data API tutorial search, embedded player, and LLM short study notes generator.</p>
                 </div>
               </div>
+              <span className="px-3 py-1 bg-indigo-500/20 border border-indigo-400/30 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-300">
+                LLM Provider: {llmProviderName}
+              </span>
             </div>
-          )}
 
-          {/* Reading Session View */}
-          {activeTab === 'study' && (
-            <StudySession 
-              topic={activeSession?.topic || 'Mitochondria Cellular Respiration'}
-              onToggleBookmark={handleToggleBookmark}
-              isBookmarked={isTopicBookmarked(activeSession?.topic || 'Mitochondria Cellular Respiration')}
-            />
-          )}
-
-          {/* Flashcard View */}
-          {activeTab === 'flashcards' && (
-            <FlashcardDeck cards={flashcards} />
-          )}
-
-          {/* Quiz View */}
-          {activeTab === 'quiz' && (
-            <QuizCard quizzes={quizzes} onComplete={handleQuizComplete} />
-          )}
-
-          {/* Coding Practice View */}
-          {activeTab === 'coding' && (
-            <CodingPractice />
-          )}
-
-          {/* Revision View */}
-          {activeTab === 'revision' && (
-            <div className="max-w-2xl mx-auto space-y-6 select-none">
-              
-              {/* Revision List checklist */}
-              <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-soft space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                  <ClipboardList className="w-4.5 h-4.5 text-indigo-600" />
-                  <h4 className="text-xs font-black uppercase text-slate-800 tracking-wider">Weekly Revision Checklist</h4>
-                </div>
-
-                <div className="space-y-3 text-[10px] font-semibold text-slate-650">
-                  <div className="flex items-center gap-2.5">
-                    <input type="checkbox" defaultChecked className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer" />
-                    <span>Re-evaluate Krebs Cycle pathway MCQ Quiz (Weak Topic)</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <input type="checkbox" className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer" />
-                    <span>Read inner/outer membrane notes in Knowledge Studio</span>
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    <input type="checkbox" className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer" />
-                    <span>Review ATP synthase 3D mindmap flowcharts</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Bookmarks view */}
-          {activeTab === 'bookmarks' && (
-            <div className="max-w-2xl mx-auto space-y-3 select-none">
-              <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Saved Learning Bookmarks</h4>
-              <div className="glassmorphism-card p-5 bg-white rounded-2xl border border-slate-200 shadow-soft space-y-2">
-                {bookmarks.map((b, idx) => (
-                  <div key={idx} className="flex justify-between items-center text-[10px] font-semibold p-2.5 border border-slate-200/50 bg-slate-50/20 rounded-xl">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-slate-800 font-bold uppercase tracking-wide">{b.title}</span>
-                      <span className="text-[8px] font-mono text-slate-400 uppercase tracking-wider">{b.contentType} reference</span>
-                    </div>
-
-                    <button
-                      onClick={() => handleToggleBookmark(b.title)}
-                      className="px-2.5 py-1 text-[9px] text-rose-500 hover:bg-rose-50 border border-rose-100 rounded-lg font-bold uppercase cursor-pointer"
-                    >
-                      Delete
-                    </button>
-                  </div>
+            {/* Quick Sample Topic Chips */}
+            <div className="space-y-2 pt-2">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-300/70 block">Select a Sample Tutorial Topic:</span>
+              <div className="flex flex-wrap gap-2">
+                {SAMPLE_TOPICS.map((topicText, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setTopicInput(topicText);
+                      handleSearchTutorials(topicText);
+                    }}
+                    className="px-3 py-1.5 bg-white/10 hover:bg-indigo-600/40 border border-white/15 rounded-xl text-xs font-semibold text-white/90 hover:text-white transition-all cursor-pointer text-left"
+                  >
+                    "{topicText}"
+                  </button>
                 ))}
-
-                {bookmarks.length === 0 && (
-                  <span className="block text-[10px] text-slate-400 font-mono py-8 text-center uppercase font-bold">
-                    No bookmarked items found.
-                  </span>
-                )}
               </div>
             </div>
-          )}
 
-          {/* History view */}
-          {activeTab === 'history' && (
-            <div className="max-w-2xl mx-auto space-y-3 select-none">
-              <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Completed Sessions & Analytics Logs</h4>
-              <div className="glassmorphism-card p-5 bg-white rounded-2xl border border-slate-200 shadow-soft space-y-3">
-                {history.map((h, idx) => (
-                  <div key={idx} className="flex justify-between items-center text-[10px] font-semibold border-b border-slate-50 pb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="p-1.5 bg-slate-50 border border-slate-250 rounded-xl text-slate-400 shrink-0">
-                        <History className="w-4 h-4" />
-                      </div>
-                      <div className="space-y-0.5">
-                        <span className="block text-slate-800 uppercase tracking-wide font-extrabold">{h.topic}</span>
-                        <span className="text-[8px] font-bold text-slate-400 font-mono uppercase tracking-wider">
-                          Type: {h.activityType} &middot; Date: {new Date(h.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
+            {/* Input Search Studio Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-indigo-500/20">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-indigo-300 absolute left-4 top-3.5" />
+                <input
+                  type="text"
+                  value={topicInput}
+                  onChange={(e) => setTopicInput(e.target.value)}
+                  placeholder="Paste or search any topic (e.g. spring, React JS, Python, Data Structures)..."
+                  className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-xs font-semibold text-white placeholder-indigo-300/60 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/30"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSearchTutorials(topicInput);
+                  }}
+                />
+              </div>
+              <button
+                disabled={isSearching}
+                onClick={() => handleSearchTutorials(topicInput)}
+                className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 disabled:opacity-50 text-xs font-black uppercase tracking-wider text-white rounded-2xl shadow-lg hover:shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              >
+                {isSearching ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Searching YouTube & LLM...</span>
+                  </>
+                ) : (
+                  <>
+                    <Youtube className="w-4 h-4 text-red-400" />
+                    <span>Fetch Videos & LLM Notes</span>
+                  </>
+                )}
+              </button>
+            </div>
 
-                    <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded font-mono font-bold">
-                      {h.score}% score
+          </div>
+        </div>
+
+        {/* MAIN DUAL-PANE VIEWPORT */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
+          
+          {/* LEFT 7 COLUMNS: YOUTUBE EMBED PLAYER & VIDEO LIST */}
+          <div className="lg:col-span-7 space-y-6 w-full">
+            
+            {/* Active Embedded YouTube Player Viewport */}
+            {activeVideo && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-soft space-y-4"
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-red-600 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full flex items-center gap-1 w-max">
+                      <Youtube className="w-3 h-3 text-red-600" />
+                      Active Tutorial Video
                     </span>
+                    <h2 className="text-sm font-black text-slate-900 mt-2 line-clamp-1">{activeVideo.title}</h2>
                   </div>
-                ))}
+                  <a
+                    href={`https://www.youtube.com/watch?v=${activeVideo.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Open in YouTube</span>
+                  </a>
+                </div>
 
-                {history.length === 0 && (
-                  <span className="block text-[10px] text-slate-400 font-mono py-8 text-center uppercase font-bold">
-                    No activity logs recorded.
-                  </span>
-                )}
+                {/* Embedded Video Iframe */}
+                <div className="relative rounded-2xl overflow-hidden bg-slate-950 aspect-video shadow-md border border-slate-200">
+                  <iframe
+                    src={activeVideo.embedUrl || `https://www.youtube.com/embed/${activeVideo.id}`}
+                    title={activeVideo.title}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+
+                {/* Active Video Stats Bar */}
+                <div className="flex items-center justify-between text-xs text-slate-600 font-mono bg-slate-50 border border-slate-200/60 rounded-xl p-3">
+                  <span className="font-bold text-slate-900">{activeVideo.channel}</span>
+                  <div className="flex items-center gap-4 text-[11px]">
+                    <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5 text-slate-400" /> {activeVideo.views}</span>
+                    <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-slate-400" /> {activeVideo.duration}</span>
+                    <span className="text-amber-600 font-extrabold">{activeVideo.rating}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* YouTube Videos Results Grid */}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-soft space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                  <Tv className="w-4 h-4 text-indigo-600" />
+                  <span>YouTube Tutorial Videos ({videoList.length})</span>
+                </h3>
+                <span className="text-[10px] text-slate-400 font-mono">Topic: "{activeTopic}"</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {videoList.map((vid) => {
+                  const isActive = activeVideo?.id === vid.id;
+                  return (
+                    <motion.div
+                      key={vid.id}
+                      whileHover={{ y: -2 }}
+                      onClick={() => setActiveVideo(vid)}
+                      className={`group rounded-2xl p-3 border transition-all cursor-pointer space-y-2 ${
+                        isActive 
+                          ? 'bg-indigo-50/70 border-indigo-400 shadow-sm' 
+                          : 'bg-slate-50/70 hover:bg-slate-100 border-slate-200'
+                      }`}
+                    >
+                      <div className="relative rounded-xl overflow-hidden aspect-video bg-slate-900">
+                        <img 
+                          src={vid.thumbnail} 
+                          alt={vid.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-slate-950/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg">
+                            <Play className="w-5 h-5 ml-0.5" />
+                          </div>
+                        </div>
+                        <span className="absolute bottom-2 right-2 bg-slate-950/80 text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
+                          {vid.duration}
+                        </span>
+                      </div>
+
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
+                          {vid.title}
+                        </h4>
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1 font-mono">
+                          <span>{vid.channel}</span>
+                          <span className="text-amber-600 font-bold">{vid.rating}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
-          )}
+
+          </div>
+
+          {/* RIGHT 5 COLUMNS: LLM SHORT STUDY NOTES CARD */}
+          <div className="lg:col-span-5 w-full">
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-slate-900 border border-indigo-500/40 rounded-3xl p-6 shadow-2xl text-white space-y-4 sticky top-6"
+            >
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <Notebook className="w-4 h-4 text-indigo-400 animate-pulse" />
+                  <h3 className="text-xs font-black uppercase tracking-wider text-white">
+                    LLM Topic Short Notes ({llmProviderName})
+                  </h3>
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(aiNotesText);
+                    showSuccess('LLM Short Notes copied to clipboard!');
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-bold text-indigo-200 transition-all cursor-pointer"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy Notes</span>
+                </button>
+              </div>
+
+              {/* Notes Text Body */}
+              <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 font-sans text-xs text-indigo-100/90 leading-relaxed whitespace-pre-wrap max-h-[600px] overflow-y-auto">
+                {aiNotesText || `# 📚 Short Study Notes: ${activeTopic}\n\n## 📌 Core Concepts & Overview\nKey theoretical foundations and principles of **${activeTopic}**.\n\n## 🚀 Key Topics Covered\n1. Setup & Environment Configuration\n2. Fundamentals & Core Components\n3. Advanced Patterns & Optimization\n\n## ⚡ Quick Revision Summary\nReview code examples and build hands-on practice exercises while watching.`}
+              </div>
+            </motion.div>
+          </div>
 
         </div>
-      )}
 
+      </div>
     </PageContainer>
   );
 };

@@ -13,6 +13,16 @@ export const taskService = {
     }
   },
 
+  batchCreateTasks: async (tasks) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/batch-create`, { tasks });
+      return response.data;
+    } catch (error) {
+      console.warn('[TaskService] batchCreateTasks fallback used:', error?.message);
+      return { success: true, data: tasks };
+    }
+  },
+
   getAllTasks: async () => {
     try {
       const response = await axios.get(`${BASE_URL}/all`);

@@ -8,16 +8,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/chat`, { messages, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] chat fallback used:', error?.message);
-      return {
-        success: true,
-        data: {
-          provider: 'Gemini',
-          model: 'gemini-1.5-pro',
-          response: `[Gemini Chat Response]: Responding to "${messages[messages.length - 1]?.content}"`,
-          timestamp: new Date().toISOString()
-        }
-      };
+      console.error('[AIService Error] chat failed:', error?.message);
+      throw error;
     }
   },
 
@@ -26,8 +18,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/summarize`, { text, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] summarize fallback used:', error?.message);
-      return { success: true, data: { response: `• Summary Point 1: Key takeaway\n• Summary Point 2: Concept summary` } };
+      console.error('[AIService Error] summarize failed:', error?.message);
+      throw error;
     }
   },
 
@@ -36,8 +28,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/notes`, { topic, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] generateNotes fallback used:', error?.message);
-      return { success: true, data: { response: `### ${topic} Notes\n- Core Principle\n- Technical Details` } };
+      console.error('[AIService Error] generateNotes failed:', error?.message);
+      throw error;
     }
   },
 
@@ -46,15 +38,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/quiz`, { topic, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] generateQuiz fallback used:', error?.message);
-      return {
-        success: true,
-        data: {
-          data: [
-            { question: `Sample question on ${topic}?`, options: ['Option A', 'Option B', 'Option C', 'Option D'], answer: 0 }
-          ]
-        }
-      };
+      console.error('[AIService Error] generateQuiz failed:', error?.message);
+      throw error;
     }
   },
 
@@ -63,15 +48,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/flashcards`, { topic, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] generateFlashcards fallback used:', error?.message);
-      return {
-        success: true,
-        data: {
-          data: [
-            { front: `What is ${topic}?`, back: `Definition of ${topic}` }
-          ]
-        }
-      };
+      console.error('[AIService Error] generateFlashcards failed:', error?.message);
+      throw error;
     }
   },
 
@@ -80,13 +58,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/study-plan`, { topic, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] generateStudyPlan fallback used:', error?.message);
-      return {
-        success: true,
-        data: {
-          data: { topic, duration: '4 Weeks', weeklyPlan: [{ week: 1, title: 'Basics', goals: ['Goal 1'] }] }
-        }
-      };
+      console.error('[AIService Error] generateStudyPlan failed:', error?.message);
+      throw error;
     }
   },
 
@@ -95,13 +68,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/roadmap`, { goal, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] generateRoadmap fallback used:', error?.message);
-      return {
-        success: true,
-        data: {
-          data: { goal, milestones: [{ step: 1, title: 'Foundations', description: 'Basic setup', estimatedDays: 14 }] }
-        }
-      };
+      console.error('[AIService Error] generateRoadmap failed:', error?.message);
+      throw error;
     }
   },
 
@@ -110,13 +78,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/tasks`, { goal, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] generateTasks fallback used:', error?.message);
-      return {
-        success: true,
-        data: {
-          data: [{ title: `Study ${goal}`, category: 'Learning', priority: 'High', estimatedMinutes: 45, xpReward: 50 }]
-        }
-      };
+      console.error('[AIService Error] generateTasks failed:', error?.message);
+      throw error;
     }
   },
 
@@ -125,13 +88,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/interview`, { topic, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] generateInterview fallback used:', error?.message);
-      return {
-        success: true,
-        data: {
-          data: [{ question: `Interview question on ${topic}?`, difficulty: 'Medium', modelAnswer: 'Answer detail' }]
-        }
-      };
+      console.error('[AIService Error] generateInterview failed:', error?.message);
+      throw error;
     }
   },
 
@@ -140,8 +98,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/diagram`, { topic, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] generateDiagram fallback used:', error?.message);
-      return { success: true, data: { diagram: `graph TD;\n  A[${topic}] --> B[Execution];` } };
+      console.error('[AIService Error] generateDiagram failed:', error?.message);
+      throw error;
     }
   },
 
@@ -150,13 +108,8 @@ export const aiService = {
       const response = await axios.post(`${BASE_URL}/mindmap`, { topic, options });
       return response.data;
     } catch (error) {
-      console.warn('[AIService] generateMindMap fallback used:', error?.message);
-      return {
-        success: true,
-        data: {
-          mindMap: { id: 'root', label: topic, children: [{ id: 'sub-1', label: 'Main Concept' }] }
-        }
-      };
+      console.error('[AIService Error] generateMindMap failed:', error?.message);
+      throw error;
     }
   },
 
@@ -165,8 +118,8 @@ export const aiService = {
       const response = await axios.get(`${BASE_URL}/providers`);
       return response.data;
     } catch (error) {
-      console.warn('[AIService] getProviders fallback used:', error?.message);
-      return { success: true, data: [] };
+      console.error('[AIService Error] getProviders failed:', error?.message);
+      throw error;
     }
   },
 
@@ -175,8 +128,8 @@ export const aiService = {
       const response = await axios.get(`${BASE_URL}/provider-health`);
       return response.data;
     } catch (error) {
-      console.warn('[AIService] getProviderHealth fallback used:', error?.message);
-      return { success: true, data: [] };
+      console.error('[AIService Error] getProviderHealth failed:', error?.message);
+      throw error;
     }
   }
 };

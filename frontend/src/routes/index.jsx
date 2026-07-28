@@ -60,7 +60,7 @@ export const AppRoutes = () => {
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/learning" element={<Learning />} />
         <Route path="/creative" element={<Creative />} />
-        <Route path="/analytics" element={<SkillCenter />} />
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
       </Route>

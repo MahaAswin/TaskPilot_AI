@@ -58,6 +58,7 @@ export const Register = () => {
                 errors.name ? 'border-rose-500 focus:border-rose-500' : 'border-slate-200'
               }`}
               placeholder="John Doe"
+              onFocus={(e) => e.target.select()}
               {...register('name')}
             />
           </div>
@@ -81,6 +82,7 @@ export const Register = () => {
                 errors.email ? 'border-rose-500 focus:border-rose-500' : 'border-slate-200'
               }`}
               placeholder="operator@taskpilot.ai"
+              onFocus={(e) => e.target.select()}
               {...register('email')}
             />
           </div>

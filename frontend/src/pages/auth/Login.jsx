@@ -58,6 +58,7 @@ export const Login = () => {
                 errors.email ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500' : 'border-slate-200'
               }`}
               placeholder="operator@taskpilot.ai"
+              onFocus={(e) => e.target.select()}
               {...register('email')}
             />
           </div>
@@ -81,6 +82,7 @@ export const Login = () => {
                 errors.password ? 'border-rose-500 focus:border-rose-500' : 'border-slate-200'
               }`}
               placeholder="••••••••"
+              onFocus={(e) => e.target.select()}
               {...register('password')}
             />
             <button

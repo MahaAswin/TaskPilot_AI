@@ -154,6 +154,12 @@ JSON Structure:
     return `Summarize the following content concisely in 3 bullet points:\n\n${text}`;
   }
 
+  static chatPrompt(messages = []) {
+    if (!messages || messages.length === 0) return 'Hello, how can I help you?';
+    const history = messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+    return `${history}\nAssistant:`;
+  }
+
   static explainPrompt(topic) {
     return `Provide a clear, engaging, step-by-step explanation of "${topic}" suitable for a developer.
 Use analogies, clear code snippets if applicable, and highlight key takeaways in Markdown.`;

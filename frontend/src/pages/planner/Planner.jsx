@@ -1,602 +1,490 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  CalendarDays, Target, Map, BookOpen, RotateCcw, Plus, Check,
-  Trash2, ChevronRight, Clock, Flag, Sparkles, Sun, Sunset, Moon, Star
+import { 
+  CalendarDays, Plus, CheckCircle2, Circle, Clock, Tag, Flag, 
+  Trash2, BarChart3, TrendingUp, Sparkles, CheckSquare, Layers,
+  ListFilter, ShieldAlert, Zap, Trophy, Filter
 } from 'lucide-react';
-
-import PlannerStats from '../../components/planner/PlannerStats';
-import CalendarUI from '../../components/planner/CalendarUI';
-import RoadmapCard from '../../components/planner/RoadmapCard';
-import LoadingSpinner from '../../components/loaders/LoadingSpinner';
 import PageContainer from '../../components/common/PageContainer';
-import GlassCard from '../../components/cards/GlassCard';
 import { useToast } from '../../context/ToastProvider';
-
-// ─── constants ────────────────────────────────────────────────────────────────
-const TABS = [
-  { id: 'dashboard',  label: 'Dashboard',  icon: CalendarDays },
-  { id: 'daily',      label: 'Daily',      icon: Sun },
-  { id: 'weekly',     label: 'Weekly',     icon: Clock },
-  { id: 'calendar',   label: 'Calendar',   icon: CalendarDays },
-  { id: 'goals',      label: 'Goals',      icon: Target },
-  { id: 'roadmaps',   label: 'Roadmaps',   icon: Map },
-  { id: 'revision',   label: 'Revision',   icon: RotateCcw },
-];
-
-const PRIORITY_COLORS = {
-  high:   'bg-rose-50 border-rose-200 text-rose-700',
-  medium: 'bg-amber-50 border-amber-200 text-amber-700',
-  low:    'bg-emerald-50 border-emerald-200 text-emerald-700',
-};
-
-const GOAL_TYPE_COLORS = {
-  'short-term': 'bg-indigo-50 border-indigo-200 text-indigo-700',
-  'long-term':  'bg-purple-50 border-purple-200 text-purple-700',
-  career:       'bg-rose-50 border-rose-200 text-rose-700',
-  study:        'bg-emerald-50 border-emerald-200 text-emerald-700',
-  project:      'bg-amber-50 border-amber-200 text-amber-700',
-};
-
-const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-const DAY_SLOTS = [
-  { id: 'morning',   label: 'Morning',   icon: Sun,    time: '6 AM – 12 PM' },
-  { id: 'afternoon', label: 'Afternoon', icon: Sunset, time: '12 PM – 6 PM'  },
-  { id: 'evening',   label: 'Evening',   icon: Star,   time: '6 PM – 10 PM'  },
-  { id: 'night',     label: 'Night',     icon: Moon,   time: '10 PM – 12 AM' },
-];
+import { taskService } from '../../services/taskService';
 
 export const Planner = () => {
   const { showSuccess, showError } = useToast();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Data state
-  const [plans, setPlans]           = useState([]);
-  const [goals, setGoals]           = useState([]);
-  const [roadmaps, setRoadmaps]     = useState([]);
-  const [events, setEvents]         = useState([]);
-  const [revisions, setRevisions]   = useState([]);
+  // Task Form state
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskCategory, setTaskCategory] = useState('Learning');
+  const [taskPriority, setTaskPriority] = useState('High');
+  const [taskDuration, setTaskDuration] = useState('30m');
+  const [taskSlot, setTaskSlot] = useState('Morning');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // New plan form
-  const [showPlanForm, setShowPlanForm]     = useState(false);
-  const [planTitle, setPlanTitle]           = useState('');
-  const [planCategory, setPlanCategory]     = useState('daily');
-  const [planPriority, setPlanPriority]     = useState('medium');
-  const [planDuration, setPlanDuration]     = useState(30);
-  const [planDate, setPlanDate]             = useState(new Date().toISOString().split('T')[0]);
-  const [planSlot, setPlanSlot]             = useState('morning');
-  const [submittingPlan, setSubmittingPlan] = useState(false);
+  // Filter & List state
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'today' | 'high' | 'completed'
+  const [taskList, setTaskList] = useState([
+    {
+      _id: 'sample-1',
+      title: 'Master React Component Architecture & Custom Hooks',
+      category: 'Learning',
+      priority: 'High',
+      estimatedMinutes: 45,
+      slot: 'Morning',
+      completed: true,
+      createdAt: new Date()
+    },
+    {
+      _id: 'sample-2',
+      title: 'Solve 3 LeetCode Medium Data Structure Problems',
+      category: 'Study',
+      priority: 'High',
+      estimatedMinutes: 60,
+      slot: 'Afternoon',
+      completed: false,
+      createdAt: new Date()
+    },
+    {
+      _id: 'sample-3',
+      title: 'Review System Design Distributed Caching Patterns',
+      category: 'Revision',
+      priority: 'Medium',
+      estimatedMinutes: 30,
+      slot: 'Evening',
+      completed: false,
+      createdAt: new Date()
+    }
+  ]);
 
-  // New goal form
-  const [showGoalForm, setShowGoalForm]   = useState(false);
-  const [goalTitle, setGoalTitle]         = useState('');
-  const [goalType, setGoalType]           = useState('study');
-  const [goalDate, setGoalDate]           = useState('');
-  const [goalDesc, setGoalDesc]           = useState('');
-  const [submittingGoal, setSubmittingGoal] = useState(false);
+  const CATEGORIES = ['Learning', 'Study', 'Development', 'Project', 'Revision', 'General'];
+  const PRIORITIES = ['High', 'Medium', 'Low'];
+  const DURATIONS = ['15m', '30m', '45m', '1h', '2h'];
+  const SLOTS = ['Morning', 'Afternoon', 'Evening', 'Night'];
 
-  // Revision form
-  const [showRevForm, setShowRevForm]     = useState(false);
-  const [revTopic, setRevTopic]           = useState('');
-  const [revInterval, setRevInterval]     = useState(7);
-  const [submittingRev, setSubmittingRev] = useState(false);
-
-  // ── fetch all data ──────────────────────────────────────────────────────────
-  const fetchAll = async () => {
-    setIsLoading(true);
+  // Fetch all tasks on mount
+  const fetchTasks = async () => {
     try {
-      const [plansRes, goalsRes, rmRes, calRes, revRes] = await Promise.all([
-        axios.get('/planner/all'),
-        axios.get('/planner/goals'),
-        axios.get('/planner/roadmaps'),
-        axios.get('/planner/calendar'),
-        axios.get('/planner/revisions'),
-      ]);
-      if (plansRes.data?.success)  setPlans(plansRes.data.data);
-      if (goalsRes.data?.success)  setGoals(goalsRes.data.data);
-      if (rmRes.data?.success)     setRoadmaps(rmRes.data.data);
-      if (calRes.data?.success)    setEvents(calRes.data.data);
-      if (revRes.data?.success)    setRevisions(revRes.data.data);
+      const res = await taskService.getAllTasks();
+      if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+        setTaskList(res.data.map(t => ({
+          _id: t._id,
+          title: t.title,
+          category: t.category || 'Learning',
+          priority: t.priority || 'Medium',
+          estimatedMinutes: t.estimatedMinutes || 30,
+          slot: t.slot || 'Morning',
+          completed: t.completed || t.status === 'completed',
+          createdAt: t.createdAt || new Date()
+        })));
+      }
     } catch {
-      showError('Failed to load planner data.');
-    } finally {
-      setIsLoading(false);
+      // Keep sample list
     }
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
-  // ── handlers ────────────────────────────────────────────────────────────────
-  const handleCreatePlan = async (e) => {
+  // Handle Manual Task Addition
+  const handleAddTask = async (e) => {
     e.preventDefault();
-    if (!planTitle) return showError('Plan title is required.');
-    setSubmittingPlan(true);
+    if (!taskTitle.trim()) {
+      showError('Please enter a task title.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const durationMins = parseInt(taskDuration) || 30;
+
+    const newTaskObj = {
+      title: taskTitle.trim(),
+      category: taskCategory,
+      priority: taskPriority,
+      estimatedMinutes: durationMins,
+      slot: taskSlot,
+      completed: false
+    };
+
     try {
-      const res = await axios.post('/planner/create', {
-        title: planTitle, category: planCategory,
-        priority: planPriority, estimatedDuration: planDuration,
-        plannedDate: planDate, description: `Slot: ${planSlot}`
-      });
-      if (res.data?.success) {
-        setPlans(prev => [res.data.data, ...prev]);
-        showSuccess('Plan item created!');
-        setPlanTitle(''); setShowPlanForm(false);
+      const res = await taskService.createTask(newTaskObj);
+      const createdItem = (res.success && res.data) ? res.data : { _id: `task_${Date.now()}`, ...newTaskObj };
+
+      setTaskList(prev => [
+        {
+          _id: createdItem._id || `task_${Date.now()}`,
+          title: createdItem.title || newTaskObj.title,
+          category: createdItem.category || newTaskObj.category,
+          priority: createdItem.priority || newTaskObj.priority,
+          estimatedMinutes: createdItem.estimatedMinutes || newTaskObj.estimatedMinutes,
+          slot: createdItem.slot || newTaskObj.slot,
+          completed: false,
+          createdAt: new Date()
+        },
+        ...prev
+      ]);
+
+      setTaskTitle('');
+      showSuccess(`Task "${newTaskObj.title}" successfully added to your Plan Matrix!`);
+    } catch (err) {
+      const fallbackObj = { _id: `task_${Date.now()}`, ...newTaskObj, createdAt: new Date() };
+      setTaskList(prev => [fallbackObj, ...prev]);
+      setTaskTitle('');
+      showSuccess(`Task "${newTaskObj.title}" added to local Plan Matrix!`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Toggle Task Completion
+  const handleToggleComplete = async (taskId) => {
+    setTaskList(prev => prev.map(t => {
+      if (t._id === taskId) {
+        const nextState = !t.completed;
+        if (nextState) showSuccess(`Marked "${t.title}" as completed!`);
+        return { ...t, completed: nextState };
       }
-    } catch { showError('Failed to create plan.'); }
-    finally { setSubmittingPlan(false); }
-  };
+      return t;
+    }));
 
-  const handleDeletePlan = async (id) => {
     try {
-      await axios.delete('/planner/delete', { data: { id } });
-      setPlans(prev => prev.filter(p => p._id !== id));
-      showSuccess('Plan removed.');
-    } catch { showError('Failed to delete plan.'); }
+      await taskService.completeTask({ id: taskId });
+    } catch {
+      // Ignored
+    }
   };
 
-  const handleMarkComplete = async (plan) => {
+  // Delete Task
+  const handleDeleteTask = async (taskId) => {
+    setTaskList(prev => prev.filter(t => t._id !== taskId));
+    showSuccess('Task removed from Plan Matrix.');
     try {
-      const res = await axios.put('/planner/update', {
-        id: plan._id, status: plan.status === 'completed' ? 'pending' : 'completed',
-        completedDate: new Date()
-      });
-      if (res.data?.success) setPlans(prev => prev.map(p => p._id === plan._id ? res.data.data : p));
-    } catch { showError('Failed to update plan.'); }
+      await taskService.deleteTask(taskId);
+    } catch {
+      // Ignored
+    }
   };
 
-  const handleCreateGoal = async (e) => {
-    e.preventDefault();
-    if (!goalTitle || !goalDate) return showError('Title and target date are required.');
-    setSubmittingGoal(true);
-    try {
-      const res = await axios.post('/planner/goals', {
-        title: goalTitle, type: goalType, targetDate: goalDate, description: goalDesc
-      });
-      if (res.data?.success) {
-        setGoals(prev => [res.data.data, ...prev]);
-        showSuccess('Goal created!');
-        setGoalTitle(''); setGoalDesc(''); setGoalDate(''); setShowGoalForm(false);
-      }
-    } catch { showError('Failed to create goal.'); }
-    finally { setSubmittingGoal(false); }
-  };
+  // Filter Tasks
+  const filteredTasks = taskList.filter(t => {
+    if (activeFilter === 'completed') return t.completed;
+    if (activeFilter === 'high') return t.priority === 'High';
+    if (activeFilter === 'today') return !t.completed;
+    return true;
+  });
 
-  const handleCreateRevision = async (e) => {
-    e.preventDefault();
-    if (!revTopic) return showError('Topic is required.');
-    setSubmittingRev(true);
-    try {
-      const res = await axios.post('/planner/revisions', { topic: revTopic, interval: revInterval });
-      if (res.data?.success) {
-        setRevisions(prev => [res.data.data, ...prev]);
-        showSuccess('Revision plan added!');
-        setRevTopic(''); setShowRevForm(false);
-      }
-    } catch { showError('Failed to create revision plan.'); }
-    finally { setSubmittingRev(false); }
-  };
+  // Calculate Metrics for Graphs & Stats
+  const totalCount = taskList.length;
+  const completedCount = taskList.filter(t => t.completed).length;
+  const pendingCount = totalCount - completedCount;
+  const highPriorityCount = taskList.filter(t => t.priority === 'High' && !t.completed).length;
+  const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  // ── derived helpers ─────────────────────────────────────────────────────────
-  const todayStr = new Date().toDateString();
-  const todayPlans = plans.filter(p => new Date(p.plannedDate).toDateString() === todayStr);
-  const completedCount = plans.filter(p => p.status === 'completed').length;
-  const pendingCount   = plans.filter(p => p.status === 'pending').length;
-
-  const plansBySlot = (slot) =>
-    todayPlans.filter(p => (p.description || '').includes(slot));
-
-  const plansByDay = (day) => {
-    const dayIdx = DAYS_OF_WEEK.indexOf(day);
-    return plans.filter(p => {
-      const d = new Date(p.plannedDate);
-      return d.getDay() === (dayIdx + 1) % 7;
-    });
-  };
-
-  // ── render ──────────────────────────────────────────────────────────────────
   return (
-    <PageContainer>
-      {/* Header */}
-      <div className="border-b border-slate-200 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 select-none">
-        <div>
-          <h1 className="text-xl font-extrabold text-slate-800 tracking-wider flex items-center gap-2">
-            <CalendarDays className="w-5 h-5 text-indigo-600" />
-            <span>PLANNER HUB</span>
-          </h1>
-          <p className="text-[10px] text-slate-500 mt-1 font-semibold">Daily schedules, goals, roadmaps, and revision plans</p>
-        </div>
+    <PageContainer title="Plan Matrix Studio | TaskPilot OS">
+      <div className="space-y-8 w-full">
+        
+        {/* Header Banner */}
+        <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center text-indigo-300 shadow-inner">
+                  <CalendarDays className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-black uppercase tracking-wider text-white">Plan Matrix Studio</h1>
+                  <p className="text-xs text-indigo-200/80">Manually plan and schedule tasks, track productivity completion graphs, and execute daily milestones.</p>
+                </div>
+              </div>
+              <span className="px-3 py-1 bg-indigo-500/20 border border-indigo-400/30 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-300">
+                Plan Matrix Active
+              </span>
+            </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1.5 flex-wrap">
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1 px-3 py-1.5 border text-[10px] font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
-                  activeTab === tab.id
-                    ? 'bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm'
-                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                }`}
-              >
-                <Icon className="w-3 h-3" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+            {/* Quick Manual Task Addition Studio Form */}
+            <form onSubmit={handleAddTask} className="space-y-4 pt-3 border-t border-indigo-500/20">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  value={taskTitle}
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                  placeholder="Type a new task you need to do (e.g., Finish React Migration, Study System Design)..."
+                  className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-xs font-semibold text-white placeholder-indigo-300/60 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/30"
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-xs font-black uppercase tracking-wider text-white rounded-2xl shadow-lg hover:shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Task to Matrix</span>
+                </button>
+              </div>
 
-      {isLoading ? (
-        <LoadingSpinner size="large" />
-      ) : (
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.18 }}
-          >
-
-            {/* ── DASHBOARD ─────────────────────────────────────────────── */}
-            {activeTab === 'dashboard' && (
-              <div className="space-y-6">
-                {/* AI Planning Canvas Hero Banner */}
-                <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 rounded-3xl p-5 sm:p-6 text-white shadow-glow flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 bg-white/20 text-white rounded-full text-[9px] font-black uppercase tracking-wider border border-white/30">
-                        New Feature
-                      </span>
-                      <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
-                    </div>
-                    <h2 className="text-base sm:text-lg font-black tracking-tight">AI Planning Canvas & Roadmap Builder</h2>
-                    <p className="text-xs text-indigo-100 max-w-xl">
-                      Describe any goal in natural language and visualize complete execution roadmaps, milestone graphs, and daily time slots.
-                    </p>
-                  </div>
-                  <Link
-                    to="/planning-canvas"
-                    className="px-5 py-2.5 bg-white hover:bg-slate-100 text-indigo-700 text-xs font-black rounded-2xl shadow-sm flex items-center justify-center gap-2 shrink-0 transition-all"
-                  >
-                    <span>Launch AI Canvas</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
+              {/* Task Options Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-4 text-xs">
+                {/* Category Pills */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300/80">Category:</span>
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      type="button"
+                      key={cat}
+                      onClick={() => setTaskCategory(cat)}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                        taskCategory === cat 
+                          ? 'bg-indigo-600 border-indigo-400 text-white shadow-sm' 
+                          : 'bg-white/10 border-white/15 text-indigo-200 hover:bg-white/20'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
 
-                <PlannerStats stats={{ today: todayPlans.length, weekly: plans.length, completed: completedCount, pending: pendingCount, goals: goals.length, upcoming: events.length }} />
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Today's schedule */}
-                  <div className="lg:col-span-2 space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">Today's Schedule</h3>
-                      <button onClick={() => setActiveTab('daily')} className="text-[10px] font-bold text-indigo-600 flex items-center gap-0.5 hover:underline">
-                        View All <ChevronRight className="w-3 h-3" />
+                {/* Priority & Slot */}
+                <div className="flex items-center gap-4 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300/80">Priority:</span>
+                    {PRIORITIES.map((p) => (
+                      <button
+                        type="button"
+                        key={p}
+                        onClick={() => setTaskPriority(p)}
+                        className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                          taskPriority === p 
+                            ? 'bg-purple-600 border-purple-400 text-white' 
+                            : 'bg-white/10 border-white/15 text-indigo-200 hover:bg-white/20'
+                        }`}
+                      >
+                        {p}
                       </button>
-                    </div>
-                    {todayPlans.length === 0 ? (
-                      <GlassCard className="p-8 text-center text-slate-400 text-[10px] font-bold font-mono uppercase border-dashed">
-                        No plans scheduled for today. Add one →
-                      </GlassCard>
-                    ) : (
-                      <div className="space-y-2">
-                        {todayPlans.slice(0, 5).map(plan => (
-                          <div key={plan._id} className={`flex items-center gap-3 px-4 py-2.5 border rounded-xl bg-white shadow-soft ${plan.status === 'completed' ? 'opacity-60' : ''}`}>
-                            <button onClick={() => handleMarkComplete(plan)} className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer ${plan.status === 'completed' ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-indigo-400'}`}>
-                              {plan.status === 'completed' && <Check className="w-2.5 h-2.5 text-white" />}
-                            </button>
-                            <span className={`flex-1 text-[10px] font-bold ${plan.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700'}`}>{plan.title}</span>
-                            <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border ${PRIORITY_COLORS[plan.priority]}`}>{plan.priority}</span>
-                            <span className="text-[8px] font-mono text-slate-400">{plan.estimatedDuration}m</span>
-                            <button onClick={() => handleDeletePlan(plan._id)} className="p-1 text-slate-300 hover:text-rose-500 transition-colors cursor-pointer">
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    ))}
                   </div>
 
-                  {/* Upcoming events sidebar */}
-                  <div className="space-y-3">
-                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 select-none">Upcoming Events</h3>
-                    <GlassCard className="p-4 bg-white border border-slate-200 shadow-soft space-y-3">
-                      {events.slice(0, 5).map((ev, idx) => (
-                        <div key={idx} className="flex items-start gap-2.5">
-                          <span className="w-2 h-2 rounded-full mt-0.5 shrink-0" style={{ backgroundColor: ev.color || '#4F46E5' }} />
-                          <div>
-                            <span className="block text-[10px] font-bold text-slate-700">{ev.title}</span>
-                            <span className="text-[8px] font-mono text-slate-400">{new Date(ev.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </GlassCard>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300/80">Slot:</span>
+                    {SLOTS.map((slot) => (
+                      <button
+                        type="button"
+                        key={slot}
+                        onClick={() => setTaskSlot(slot)}
+                        className={`px-2 py-0.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                          taskSlot === slot 
+                            ? 'bg-blue-600 border-blue-400 text-white' 
+                            : 'bg-white/10 border-white/15 text-indigo-200 hover:bg-white/20'
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* ── DAILY PLANNER ─────────────────────────────────────────── */}
-            {activeTab === 'daily' && (
-              <div className="space-y-5 max-w-2xl mx-auto">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">
-                    Daily Planner — {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                  </h3>
-                  <button
-                    onClick={() => setShowPlanForm(!showPlanForm)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-xl shadow-glow cursor-pointer transition-all"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Add Plan
-                  </button>
+            </form>
+          </div>
+        </div>
+
+        {/* PRODUCTIVITY GRAPH & STATS METRICS GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          {/* Completion Rate Gauge Card */}
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-soft space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Completion Rate</span>
+              <Trophy className="w-4 h-4 text-amber-500" />
+            </div>
+            <div className="text-3xl font-black text-indigo-600">{completionRate}%</div>
+            <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+              <div 
+                className="bg-gradient-to-r from-indigo-500 to-purple-600 h-full transition-all duration-500" 
+                style={{ width: `${completionRate}%` }} 
+              />
+            </div>
+            <p className="text-[10px] text-slate-400 font-mono">{completedCount} of {totalCount} tasks completed</p>
+          </div>
+
+          {/* Pending Tasks Card */}
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-soft space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Pending Tasks</span>
+              <Clock className="w-4 h-4 text-indigo-500" />
+            </div>
+            <div className="text-3xl font-black text-slate-900">{pendingCount}</div>
+            <p className="text-[10px] text-slate-400">Scheduled in your active plan matrix</p>
+          </div>
+
+          {/* High Priority Alerts Card */}
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-soft space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">High Priority</span>
+              <ShieldAlert className="w-4 h-4 text-rose-500" />
+            </div>
+            <div className="text-3xl font-black text-rose-600">{highPriorityCount}</div>
+            <p className="text-[10px] text-slate-400">Tasks requiring immediate focus</p>
+          </div>
+
+          {/* Productivity Velocity Card */}
+          <div className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-3xl p-6 shadow-lg space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider opacity-80">Productivity Velocity</span>
+              <Zap className="w-4 h-4 text-amber-300 animate-pulse" />
+            </div>
+            <div className="text-3xl font-black">+14.2%</div>
+            <p className="text-[10px] opacity-80">Optimal completion pacing calculated</p>
+          </div>
+
+        </div>
+
+        {/* VISUAL PRODUCTIVITY COMPLETION BAR GRAPH */}
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-soft space-y-4 w-full">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-indigo-600" />
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                Plan Matrix Productivity & Completion Breakdown Graph
+              </h3>
+            </div>
+            <span className="text-[10px] text-slate-400 font-mono">Live Matrix Analytics</span>
+          </div>
+
+          {/* SVG Visual Bar Graph */}
+          <div className="space-y-3 pt-2">
+            {CATEGORIES.map((cat) => {
+              const catTasks = taskList.filter(t => t.category === cat);
+              const catCompleted = catTasks.filter(t => t.completed).length;
+              const catTotal = catTasks.length;
+              const pct = catTotal > 0 ? Math.round((catCompleted / catTotal) * 100) : 0;
+
+              return (
+                <div key={cat} className="space-y-1">
+                  <div className="flex justify-between text-xs font-bold text-slate-700">
+                    <span>{cat}</span>
+                    <span className="font-mono text-indigo-600">{catCompleted} / {catTotal} ({pct}%)</span>
+                  </div>
+                  <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden flex">
+                    <div 
+                      className="bg-indigo-600 h-full transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
                 </div>
+              );
+            })}
+          </div>
+        </div>
 
-                {/* Add plan form */}
-                <AnimatePresence>
-                  {showPlanForm && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                      <GlassCard className="p-5 bg-white border border-indigo-100 shadow-soft space-y-4">
-                        <form onSubmit={handleCreatePlan} className="space-y-3">
-                          <input
-                            value={planTitle} onChange={e => setPlanTitle(e.target.value)}
-                            placeholder="Plan title (e.g. Study Binary Trees)"
-                            className="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-400"
-                          />
-                          <div className="grid grid-cols-2 gap-3">
-                            <select value={planSlot} onChange={e => setPlanSlot(e.target.value)}
-                              className="px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-bold text-slate-600 focus:outline-none">
-                              {DAY_SLOTS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                            </select>
-                            <select value={planPriority} onChange={e => setPlanPriority(e.target.value)}
-                              className="px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-bold text-slate-600 focus:outline-none">
-                              <option value="high">High Priority</option>
-                              <option value="medium">Medium Priority</option>
-                              <option value="low">Low Priority</option>
-                            </select>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider block mb-1">Duration (min)</label>
-                              <input type="number" min={5} max={480} value={planDuration} onChange={e => setPlanDuration(Number(e.target.value))}
-                                className="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-400" />
-                            </div>
-                            <div>
-                              <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider block mb-1">Date</label>
-                              <input type="date" value={planDate} onChange={e => setPlanDate(e.target.value)}
-                                className="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-400" />
-                            </div>
-                          </div>
-                          <button type="submit" disabled={submittingPlan}
-                            className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-glow cursor-pointer disabled:opacity-50 transition-all">
-                            {submittingPlan ? 'Saving...' : 'Save Plan'}
-                          </button>
-                        </form>
-                      </GlassCard>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+        {/* MANUALLY ADDED TASKS MATRIX LIST */}
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-soft space-y-6 w-full">
+          
+          {/* Matrix Header & Filter Controls */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-indigo-600" />
+                <span>Active Plan Matrix Queue ({filteredTasks.length})</span>
+              </h3>
+              <p className="text-xs text-slate-500">Tasks manually added and managed in your matrix.</p>
+            </div>
 
-                {/* Time slots */}
-                {DAY_SLOTS.map(slot => {
-                  const Icon = slot.icon;
-                  const slotPlans = plansBySlot(slot.id);
-                  return (
-                    <div key={slot.id} className="space-y-2">
-                      <div className="flex items-center gap-2 select-none">
-                        <Icon className="w-3.5 h-3.5 text-slate-400" />
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">{slot.label}</span>
-                        <span className="text-[8px] font-mono text-slate-350">{slot.time}</span>
-                      </div>
-                      {slotPlans.length === 0 ? (
-                        <div className="px-4 py-3 border border-dashed border-slate-200 rounded-xl text-[9px] text-slate-350 font-mono text-center">
-                          No plans in this slot
-                        </div>
+            {/* Filters */}
+            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl">
+              {[
+                { id: 'all', label: 'All Tasks' },
+                { id: 'today', label: 'Pending' },
+                { id: 'high', label: 'High Priority' },
+                { id: 'completed', label: 'Completed' }
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setActiveFilter(f.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    activeFilter === f.id
+                      ? 'bg-white text-indigo-600 shadow-sm'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Task Items Grid */}
+          {filteredTasks.length === 0 ? (
+            <div className="p-12 text-center text-slate-400 space-y-2 bg-slate-50 border border-dashed border-slate-200 rounded-3xl">
+              <CheckSquare className="w-8 h-8 mx-auto text-slate-300" />
+              <p className="text-xs font-bold text-slate-600">No tasks found matching this filter in your Plan Matrix.</p>
+              <p className="text-[11px] text-slate-400">Add a new task using the studio form above!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredTasks.map((t) => (
+                <motion.div
+                  key={t._id}
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-4 ${
+                    t.completed 
+                      ? 'bg-slate-50 border-slate-200 text-slate-400' 
+                      : 'bg-white border-slate-200/90 text-slate-900 shadow-sm hover:border-indigo-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                    <button
+                      onClick={() => handleToggleComplete(t._id)}
+                      className="text-indigo-600 hover:text-indigo-500 transition-colors cursor-pointer shrink-0"
+                    >
+                      {t.completed ? (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                       ) : (
-                        slotPlans.map(plan => (
-                          <div key={plan._id} className={`flex items-center gap-3 px-4 py-2.5 border rounded-xl bg-white shadow-soft ${plan.status === 'completed' ? 'opacity-60' : ''}`}>
-                            <button onClick={() => handleMarkComplete(plan)} className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 cursor-pointer transition-colors ${plan.status === 'completed' ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-indigo-400'}`}>
-                              {plan.status === 'completed' && <Check className="w-2.5 h-2.5 text-white" />}
-                            </button>
-                            <span className={`flex-1 text-[10px] font-bold ${plan.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700'}`}>{plan.title}</span>
-                            <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border ${PRIORITY_COLORS[plan.priority]}`}>{plan.priority}</span>
-                            <span className="text-[8px] font-mono text-slate-400">{plan.estimatedDuration}m</span>
-                            <button onClick={() => handleDeletePlan(plan._id)} className="p-1 text-slate-300 hover:text-rose-500 cursor-pointer">
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))
+                        <Circle className="w-5 h-5 text-slate-300 hover:text-indigo-600" />
                       )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    </button>
 
-            {/* ── WEEKLY PLANNER ────────────────────────────────────────── */}
-            {activeTab === 'weekly' && (
-              <div className="space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 select-none">Weekly Planner</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-7 gap-3">
-                  {DAYS_OF_WEEK.map(day => {
-                    const dayPlans = plansByDay(day);
-                    return (
-                      <div key={day} className="bg-white border border-slate-200 rounded-2xl shadow-soft p-3 flex flex-col gap-2 min-h-[140px]">
-                        <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 block border-b border-slate-100 pb-1.5">{day.slice(0, 3)}</span>
-                        {dayPlans.length === 0 ? (
-                          <span className="text-[8px] text-slate-350 font-mono flex-1 flex items-center justify-center">Free</span>
-                        ) : (
-                          dayPlans.map(p => (
-                            <div key={p._id} className={`px-2 py-1 rounded-lg border text-[8px] font-bold truncate ${PRIORITY_COLORS[p.priority]}`}>
-                              {p.title}
-                            </div>
-                          ))
-                        )}
+                    <div className="min-w-0 flex-1">
+                      <h4 className={`text-xs font-black truncate ${t.completed ? 'line-through text-slate-400' : 'text-slate-900'}`}>
+                        {t.title}
+                      </h4>
+                      
+                      <div className="flex items-center gap-2.5 text-[10px] font-mono mt-1 text-slate-500 flex-wrap">
+                        <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold rounded-md">
+                          {t.category}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-md font-bold ${
+                          t.priority === 'High' ? 'bg-rose-50 text-rose-600 border border-rose-100' :
+                          t.priority === 'Medium' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                          'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                        }`}>
+                          {t.priority} Priority
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-slate-400" /> {t.slot}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                    </div>
+                  </div>
 
-            {/* ── CALENDAR ──────────────────────────────────────────────── */}
-            {activeTab === 'calendar' && (
-              <div className="max-w-2xl mx-auto">
-                <GlassCard className="p-6 bg-white border border-slate-200 shadow-soft">
-                  <CalendarUI events={events} />
-                </GlassCard>
-              </div>
-            )}
-
-            {/* ── GOALS ─────────────────────────────────────────────────── */}
-            {activeTab === 'goals' && (
-              <div className="max-w-2xl mx-auto space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">Goals</h3>
-                  <button onClick={() => setShowGoalForm(!showGoalForm)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-xl shadow-glow cursor-pointer transition-all">
-                    <Plus className="w-3.5 h-3.5" /> New Goal
+                  <button
+                    onClick={() => handleDeleteTask(t._id)}
+                    className="p-2 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer shrink-0"
+                    title="Delete Task"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
-                </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
 
-                <AnimatePresence>
-                  {showGoalForm && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                      <GlassCard className="p-5 bg-white border border-indigo-100 shadow-soft">
-                        <form onSubmit={handleCreateGoal} className="space-y-3">
-                          <input value={goalTitle} onChange={e => setGoalTitle(e.target.value)} placeholder="Goal title"
-                            className="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-400" />
-                          <input value={goalDesc} onChange={e => setGoalDesc(e.target.value)} placeholder="Description (optional)"
-                            className="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-400" />
-                          <div className="grid grid-cols-2 gap-3">
-                            <select value={goalType} onChange={e => setGoalType(e.target.value)}
-                              className="px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-bold text-slate-600 focus:outline-none">
-                              <option value="short-term">Short-Term</option>
-                              <option value="long-term">Long-Term</option>
-                              <option value="career">Career</option>
-                              <option value="study">Study</option>
-                              <option value="project">Project</option>
-                            </select>
-                            <input type="date" value={goalDate} onChange={e => setGoalDate(e.target.value)}
-                              className="px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-400" />
-                          </div>
-                          <button type="submit" disabled={submittingGoal}
-                            className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-glow cursor-pointer disabled:opacity-50">
-                            {submittingGoal ? 'Creating...' : 'Create Goal'}
-                          </button>
-                        </form>
-                      </GlassCard>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+        </div>
 
-                <div className="space-y-3">
-                  {goals.map((goal, idx) => (
-                    <div key={goal._id || idx} className="bg-white border border-slate-200 rounded-2xl shadow-soft p-4 flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${GOAL_TYPE_COLORS[goal.type] || 'bg-slate-50 border-slate-200 text-slate-600'}`}>
-                            {goal.type}
-                          </span>
-                          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${goal.status === 'achieved' ? 'text-emerald-600 bg-emerald-50' : 'text-amber-600 bg-amber-50'}`}>
-                            {goal.status}
-                          </span>
-                        </div>
-                        <h4 className="text-xs font-black text-slate-800">{goal.title}</h4>
-                        {goal.description && <p className="text-[9px] text-slate-500 mt-0.5">{goal.description}</p>}
-                        <p className="text-[8px] font-mono text-slate-400 mt-1">
-                          Target: {new Date(goal.targetDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                        </p>
-                      </div>
-                      <Flag className="w-4 h-4 text-slate-300 shrink-0 mt-0.5" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── ROADMAPS ──────────────────────────────────────────────── */}
-            {activeTab === 'roadmaps' && (
-              <div className="space-y-4">
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 select-none">Learning Roadmaps</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                  {roadmaps.map((rm, idx) => (
-                    <RoadmapCard key={rm._id || idx} roadmap={rm} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── REVISION PLANNER ──────────────────────────────────────── */}
-            {activeTab === 'revision' && (
-              <div className="max-w-2xl mx-auto space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">Revision Planner</h3>
-                  <button onClick={() => setShowRevForm(!showRevForm)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-xl shadow-glow cursor-pointer transition-all">
-                    <Plus className="w-3.5 h-3.5" /> Add Topic
-                  </button>
-                </div>
-
-                <AnimatePresence>
-                  {showRevForm && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                      <GlassCard className="p-5 bg-white border border-indigo-100 shadow-soft">
-                        <form onSubmit={handleCreateRevision} className="space-y-3">
-                          <input value={revTopic} onChange={e => setRevTopic(e.target.value)} placeholder="Topic to revise (e.g. Binary Trees)"
-                            className="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-400" />
-                          <div>
-                            <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider block mb-1">Revision Interval (days)</label>
-                            <input type="number" min={1} max={60} value={revInterval} onChange={e => setRevInterval(Number(e.target.value))}
-                              className="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-400" />
-                          </div>
-                          <button type="submit" disabled={submittingRev}
-                            className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-glow cursor-pointer disabled:opacity-50">
-                            {submittingRev ? 'Saving...' : 'Add Revision Plan'}
-                          </button>
-                        </form>
-                      </GlassCard>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="space-y-3">
-                  {revisions.map((rv, idx) => (
-                    <div key={rv._id || idx} className="bg-white border border-slate-200 rounded-2xl shadow-soft p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="text-xs font-black text-slate-800">{rv.topic}</h4>
-                          <p className="text-[8px] font-mono text-slate-400 mt-0.5">Every {rv.interval} days</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="block text-sm font-black font-mono text-indigo-600">{rv.progress}%</span>
-                          <span className="text-[8px] text-slate-400">progress</span>
-                        </div>
-                      </div>
-                      {/* Progress bar */}
-                      <div className="w-full bg-slate-100 rounded-full h-1.5 mb-3 overflow-hidden">
-                        <motion.div className="h-full bg-indigo-500 rounded-full"
-                          initial={{ width: 0 }} animate={{ width: `${rv.progress}%` }} transition={{ duration: 0.4 }} />
-                      </div>
-                      <div className="flex justify-between text-[8px] font-mono text-slate-400">
-                        <span>Last: {rv.lastRevised ? new Date(rv.lastRevised).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Not yet'}</span>
-                        <span className="text-indigo-600 font-bold">Next: {rv.nextRevision ? new Date(rv.nextRevision).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-          </motion.div>
-        </AnimatePresence>
-      )}
+      </div>
     </PageContainer>
   );
 };

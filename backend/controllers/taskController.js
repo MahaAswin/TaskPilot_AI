@@ -13,6 +13,32 @@ export const createTask = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc    Batch create tasks assigned from Planner Agent
+ * @route   POST /api/tasks/batch-create
+ * @access  Private
+ */
+export const batchCreateTasks = asyncHandler(async (req, res) => {
+  const tasks = Array.isArray(req.body.tasks) ? req.body.tasks : [req.body];
+  const createdTasks = [];
+  for (const t of tasks) {
+    if (t.title) {
+      const saved = await taskService.createTaskItem({
+        title: t.title,
+        description: t.description || t.title,
+        category: t.category || 'Study Daily',
+        priority: (t.priority || 'high').toLowerCase(),
+        status: 'pending',
+        estimatedTime: t.estimatedMinutes || t.estimatedTime || 45,
+        xpReward: t.xpReward || 30,
+        dueDate: new Date().toISOString()
+      });
+      createdTasks.push(saved);
+    }
+  }
+  return ApiResponse.created(res, createdTasks, 'Plan tasks successfully assigned to Task Queue');
+});
+
+/**
  * @desc    Fetch all tasks
  * @route   GET /api/tasks/all
  * @access  Private
@@ -97,6 +123,7 @@ export const getXP = asyncHandler(async (req, res) => {
 
 export default {
   createTask,
+  batchCreateTasks,
   getTasks,
   getTodayTasks,
   updateTask,

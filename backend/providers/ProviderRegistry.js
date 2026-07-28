@@ -6,6 +6,8 @@ import { ClaudeProvider } from './ClaudeProvider.js';
 import { DeepSeekProvider } from './DeepSeekProvider.js';
 import { MistralProvider } from './MistralProvider.js';
 import { OllamaProvider } from './OllamaProvider.js';
+import { OpenRouterProvider } from './OpenRouterProvider.js';
+import { HuggingFaceProvider } from './HuggingFaceProvider.js';
 
 export const PROVIDER_CLASSES = {
   mock: MockProvider,
@@ -15,7 +17,9 @@ export const PROVIDER_CLASSES = {
   claude: ClaudeProvider,
   deepseek: DeepSeekProvider,
   mistral: MistralProvider,
-  ollama: OllamaProvider
+  ollama: OllamaProvider,
+  openrouter: OpenRouterProvider,
+  huggingface: HuggingFaceProvider
 };
 
 export class ProviderRegistry {

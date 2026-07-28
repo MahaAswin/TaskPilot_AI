@@ -20,65 +20,55 @@ class SubAgentInterface {
   }
 }
 
-// Inline Sub-Agent mock implementations conforming to SubAgentInterface
-class MockKnowledgeAgent extends SubAgentInterface {
+import { globalProviderManager } from '../../../providers/ProviderManager.js';
+
+// Real Sub-Agent implementations delegating to Gemini AI ProviderManager
+class RealKnowledgeAgent extends SubAgentInterface {
   async execute(prompt, context) {
-    return `*   **Concept Summary**: Mitochondria generate ATP via oxidative phosphorylation processes.
-*   **Structure**: Folds are called cristae, matrix fluid contains enzymes and DNA.
-*   **Key Fact**: mtDNAs are inherited matrilineally.`;
+    const res = await globalProviderManager.executeMethod('generateNotes', prompt, { agent: 'Knowledge Agent' });
+    return res.response;
   }
 }
 
-class MockPlannerAgent extends SubAgentInterface {
+class RealPlannerAgent extends SubAgentInterface {
   async execute(prompt, context) {
-    return `1.  **Phase 1: Research** (Duration: 2 days) - Gather textbook references.
-2.  **Phase 2: Timelines** (Duration: 3 days) - Setup study slots.
-3.  **Phase 3: Quiz Prep** (Duration: 1 day) - Build self-assessment decks.`;
+    const res = await globalProviderManager.executeMethod('generateRoadmap', prompt, { agent: 'Planner Agent' });
+    return res.response;
   }
 }
 
-class MockTaskAgent extends SubAgentInterface {
+class RealTaskAgent extends SubAgentInterface {
   async execute(prompt, context) {
-    return `- [x] Outline membrane outer/inner differences.
-- [ ] Define the citric acid cycle nodes.
-- [ ] Review oxidative phosphorylation electron counts.`;
+    const res = await globalProviderManager.executeMethod('generateTasks', prompt, { agent: 'Task Agent' });
+    return res.response;
   }
 }
 
-class MockLearningAgent extends SubAgentInterface {
+class RealLearningAgent extends SubAgentInterface {
   async execute(prompt, context) {
-    return `#### Question 1
-Which mitochondrial membrane contains folded cristae structure?
-*   (A) Outer Membrane
-*   (B) Inner Membrane (Correct)
-*   (C) Intermembrane Space
-
-#### Flashcard 1
-*   **Front**: Citric Acid Cycle
-*   **Back**: A key metabolic pathway taking place in the matrix that oxidizes acetyl-CoA.`;
+    const res = await globalProviderManager.executeMethod('generateQuiz', prompt, { agent: 'Learning Agent' });
+    return res.response;
   }
 }
 
-class MockCreativeAgent extends SubAgentInterface {
+class RealCreativeAgent extends SubAgentInterface {
   async execute(prompt, context) {
-    return `*Flowchart visual indicator is active.*
-\`\`\`
-Matrix [Enzymes] ➔ Krebs Cycle ➔ Electron Transport [Cristae] ➔ ATP Generated
-\`\`\``;
+    const res = await globalProviderManager.executeMethod('generateMermaidDiagram', prompt, { agent: 'Creative Agent' });
+    return res.response;
   }
 }
 
-class MockSkillAnalyzer extends SubAgentInterface {
+class RealSkillAnalyzer extends SubAgentInterface {
   async execute(prompt, context) {
-    return `*   **Bio-Energetics skill level**: 4 / 5 (Advanced)
-*   **Suggested improvements**: Review enzyme mechanics during ATP synthase steps.`;
+    const res = await globalProviderManager.executeMethod('explainTopic', `Skill Analysis for: ${prompt}`, { agent: 'Skill Analyzer Agent' });
+    return res.response;
   }
 }
 
-class MockProductivityCoach extends SubAgentInterface {
+class RealProductivityCoach extends SubAgentInterface {
   async execute(prompt, context) {
-    return `*   **Daily study streak**: 4 consecutive days recorded.
-*   **Tip**: Study notes compiled during morning hours improve retention by 22%.`;
+    const res = await globalProviderManager.executeMethod('explainTopic', `Productivity Coaching Advice for: ${prompt}`, { agent: 'Productivity Coach Agent' });
+    return res.response;
   }
 }
 
@@ -90,13 +80,13 @@ export class CoordinatorService {
   }
 
   initializeRegistry() {
-    this.registry.set(AgentType.KNOWLEDGE, new MockKnowledgeAgent(AgentType.KNOWLEDGE));
-    this.registry.set(AgentType.PLANNER, new MockPlannerAgent(AgentType.PLANNER));
-    this.registry.set(AgentType.TASK, new MockTaskAgent(AgentType.TASK));
-    this.registry.set(AgentType.LEARNING, new MockLearningAgent(AgentType.LEARNING));
-    this.registry.set(AgentType.CREATIVE, new MockCreativeAgent(AgentType.CREATIVE));
-    this.registry.set(AgentType.SKILL_ANALYZER, new MockSkillAnalyzer(AgentType.SKILL_ANALYZER));
-    this.registry.set(AgentType.PRODUCTIVITY_COACH, new MockProductivityCoach(AgentType.PRODUCTIVITY_COACH));
+    this.registry.set(AgentType.KNOWLEDGE, new RealKnowledgeAgent(AgentType.KNOWLEDGE));
+    this.registry.set(AgentType.PLANNER, new RealPlannerAgent(AgentType.PLANNER));
+    this.registry.set(AgentType.TASK, new RealTaskAgent(AgentType.TASK));
+    this.registry.set(AgentType.LEARNING, new RealLearningAgent(AgentType.LEARNING));
+    this.registry.set(AgentType.CREATIVE, new RealCreativeAgent(AgentType.CREATIVE));
+    this.registry.set(AgentType.SKILL_ANALYZER, new RealSkillAnalyzer(AgentType.SKILL_ANALYZER));
+    this.registry.set(AgentType.PRODUCTIVITY_COACH, new RealProductivityCoach(AgentType.PRODUCTIVITY_COACH));
   }
 
   /**

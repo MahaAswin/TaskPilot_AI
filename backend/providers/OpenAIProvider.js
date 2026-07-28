@@ -14,7 +14,10 @@ export class OpenAIProvider extends BaseProvider {
   }
 
   async generateImage(prompt, options = {}) {
-    return { url: 'https://placehold.co/600x400/10b981/white?text=DALL-E+3+Image', prompt };
+    return {
+      error: 'Image generation is not yet supported by the configured provider.',
+      message: 'Image generation is not yet supported by the configured provider.'
+    };
   }
 
   async generateDiagram(prompt, options = {}) {

@@ -1,10 +1,7 @@
 import { body } from 'express-validator';
 
 export const imageValidator = [
-  body('prompt').trim().notEmpty().withMessage('Prompt query is required'),
-  body('style').trim().notEmpty().withMessage('Style identifier is required'),
-  body('size').trim().notEmpty().withMessage('Size configuration is required'),
-  body('aspectRatio').trim().notEmpty().withMessage('AspectRatio ratio is required')
+  body('prompt').trim().notEmpty().withMessage('Prompt query is required')
 ];
 
 export const flowchartValidator = [

@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import { Target, Compass } from 'lucide-react';
 import { RADAR_DATA } from '../../constants/skillMockData';
 
-export const RadarChartCard = () => {
-  // SVG Radar Chart math calculations for 6 axes
+export const RadarChartCard = ({ data = RADAR_DATA }) => {
+  const chartData = (data && data.length > 0) ? data : RADAR_DATA;
+
+  // SVG Radar Chart math calculations
   const center = 120;
   const radius = 85;
-  const numAxes = RADAR_DATA.length;
+  const numAxes = chartData.length;
 
   const getCoordinates = (index, value) => {
     const angle = (Math.PI * 2 / numAxes) * index - Math.PI / 2;
@@ -18,13 +20,13 @@ export const RadarChartCard = () => {
   };
 
   // Generate SVG polygon points for actual score vs target score
-  const scorePoints = RADAR_DATA.map((d, i) => {
-    const { x, y } = getCoordinates(i, d.score);
+  const scorePoints = chartData.map((d, i) => {
+    const { x, y } = getCoordinates(i, d.score || 0);
     return `${x},${y}`;
   }).join(' ');
 
-  const targetPoints = RADAR_DATA.map((d, i) => {
-    const { x, y } = getCoordinates(i, d.target);
+  const targetPoints = chartData.map((d, i) => {
+    const { x, y } = getCoordinates(i, d.target || 90);
     return `${x},${y}`;
   }).join(' ');
 
@@ -59,7 +61,7 @@ export const RadarChartCard = () => {
             ))}
 
             {/* Radar Spokes */}
-            {RADAR_DATA.map((_, i) => {
+            {chartData.map((_, i) => {
               const { x, y } = getCoordinates(i, 100);
               return (
                 <line
@@ -95,7 +97,7 @@ export const RadarChartCard = () => {
             />
 
             {/* Axis Label Placement */}
-            {RADAR_DATA.map((d, i) => {
+            {chartData.map((d, i) => {
               const { x, y } = getCoordinates(i, 115);
               return (
                 <text
@@ -106,7 +108,7 @@ export const RadarChartCard = () => {
                   dominantBaseline="central"
                   className="text-[9px] font-bold fill-slate-700 font-sans"
                 >
-                  {d.domain}
+                  {d.domain || d.skill}
                 </text>
               );
             })}
@@ -115,12 +117,12 @@ export const RadarChartCard = () => {
 
         {/* Legend Ratings */}
         <div className="space-y-2 text-xs font-mono">
-          {RADAR_DATA.map((d, i) => (
+          {chartData.map((d, i) => (
             <div key={i} className="flex items-center justify-between gap-6 p-2 bg-slate-50 rounded-xl border border-slate-200/50">
-              <span className="font-bold text-slate-700">{d.domain}</span>
+              <span className="font-bold text-slate-700">{d.domain || d.skill}</span>
               <div className="flex items-center gap-2">
-                <span className="text-indigo-600 font-extrabold">{d.score}%</span>
-                <span className="text-slate-400 text-[10px]">/ {d.target}%</span>
+                <span className="text-indigo-600 font-extrabold">{d.score || 0}%</span>
+                <span className="text-slate-400 text-[10px]">/ {d.target || 90}%</span>
               </div>
             </div>
           ))}

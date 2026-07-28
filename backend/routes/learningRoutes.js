@@ -6,7 +6,8 @@ import {
   getBookmarks, 
   toggleBookmark, 
   getQuizzes, 
-  getFlashcards 
+  getFlashcards,
+  searchYouTubeTutorials 
 } from '../controllers/learningController.js';
 import { 
   startValidator, 
@@ -26,5 +27,6 @@ router.get('/bookmarks', getBookmarks);
 router.post('/bookmark', bookmarkValidator, validateFields, toggleBookmark);
 router.post('/quiz', getQuizzes);
 router.post('/flashcards', getFlashcards);
+router.post('/youtube-search', searchYouTubeTutorials);
 
 export default router;

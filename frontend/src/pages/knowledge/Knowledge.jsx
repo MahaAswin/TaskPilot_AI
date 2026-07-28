@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   BookOpen, Plus, FileText, Pin, Star, Grid, Search, SlidersHorizontal, 
-  HelpCircle, Sparkles, ChevronRight, Award, FolderPlus, BookOpenCheck 
+  HelpCircle, Sparkles, ChevronRight, Award, FolderPlus, BookOpenCheck, RefreshCw
 } from 'lucide-react';
 import { useToast } from '../../context/ToastProvider';
 

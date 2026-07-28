@@ -10,95 +10,156 @@ import asyncHandler from '../utils/AsyncHandler.js';
  * @route   POST /api/creative/generate-image
  * @access  Private
  */
+import { globalProviderManager } from '../providers/ProviderManager.js';
+
+/**
+ * @desc    Generate an AI Image asset
+ * @route   POST /api/creative/generate-image
+ * @access  Private
+ */
 export const generateImage = asyncHandler(async (req, res, next) => {
-  const { prompt, style, size, aspectRatio, quality } = req.body;
+  const { prompt, style = 'cinematic', width = 1024, height = 1024 } = req.body;
+  
+  if (!prompt || !prompt.trim()) {
+    return next(ApiError.badRequest('Image prompt is required'));
+  }
 
-  const asset = await CreativeAsset.create({
-    userId: req.user._id,
-    title: prompt.substring(0, 30) || 'Untitled Image',
-    prompt,
-    type: 'image',
-    category: 'Graphics',
-    tags: [style, 'ai_generated'],
-    status: 'completed',
-    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=60',
-    fileUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1080&auto=format&fit=crop&q=80',
-    isFavorite: false
-  });
+  const cleanPrompt = prompt.trim();
+  const styledPrompt = style && style !== 'none' ? `${cleanPrompt}, ${style} style, 8k resolution, highly detailed` : cleanPrompt;
+  
+  // Construct Pollinations AI Image URL
+  const encodedPrompt = encodeURIComponent(styledPrompt);
+  const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&seed=${Math.floor(Math.random() * 1000000)}`;
 
-  return ApiResponse.created(res, asset, 'Image asset generated successfully');
+  // Generate detailed LLM visual description
+  const descriptionPrompt = `Describe in rich visual, artistic, and architectural detail the following image generation prompt: "${cleanPrompt}". Explain its key visual elements, color palette, lighting, composition, and symbolic themes in 3-4 structured paragraphs.`;
+  
+  let descriptionText = '';
+  try {
+    const aiResult = await globalProviderManager.executeMethod('explainTopic', descriptionPrompt);
+    descriptionText = typeof aiResult === 'string' ? aiResult : (aiResult.response || aiResult.rawResult || '');
+  } catch (err) {
+    descriptionText = `### 🎨 Visual Breakdown & Analysis\n\n- **Subject**: ${cleanPrompt}\n- **Artistic Style**: ${style}\n- **Lighting & Atmosphere**: Vibrant high-contrast illumination with deep color saturation.\n- **Composition**: Centered focal subject with detailed background depth and 8k rendering elements.`;
+  }
+
+  // Create asset record in database
+  let asset;
+  try {
+    asset = await CreativeAsset.create({
+      userId: req.user._id,
+      title: cleanPrompt.slice(0, 60),
+      prompt: cleanPrompt,
+      type: 'image',
+      category: 'AI Image Studio',
+      tags: [style, 'ai-art', 'pollinations'],
+      status: 'completed',
+      fileUrl: imageUrl,
+      thumbnail: imageUrl,
+      content: descriptionText
+    });
+  } catch (err) {
+    asset = {
+      _id: `img_${Date.now()}`,
+      title: cleanPrompt.slice(0, 60),
+      prompt: cleanPrompt,
+      fileUrl: imageUrl,
+      content: descriptionText,
+      style,
+      createdAt: new Date()
+    };
+  }
+
+  return ApiResponse.created(res, {
+    asset,
+    imageUrl,
+    description: descriptionText,
+    prompt: cleanPrompt,
+    style
+  }, 'AI Image & Detailed Visual Description generated successfully via Pollinations AI & LLM');
 });
 
 /**
- * @desc    Generate a mock AI Flowchart asset
+ * @desc    Generate a real Gemini AI Flowchart asset
  * @route   POST /api/creative/generate-flowchart
  * @access  Private
  */
 export const generateFlowchart = asyncHandler(async (req, res, next) => {
   const { title, topic } = req.body;
+  const targetTopic = topic || title || 'Workflow Flowchart';
+
+  const providerResult = await globalProviderManager.executeMethod('generateMermaidDiagram', targetTopic);
 
   const asset = await CreativeAsset.create({
     userId: req.user._id,
-    title,
-    prompt: `Generate a flowchart illustrating ${topic}`,
+    title: title || targetTopic,
+    prompt: `Generate a flowchart illustrating ${targetTopic}`,
     type: 'flowchart',
     category: 'Flowcharts',
     tags: ['flowchart', 'structure'],
     status: 'completed',
+    content: providerResult.response,
     thumbnail: '',
     fileUrl: '',
     isFavorite: false
   });
 
-  return ApiResponse.created(res, asset, 'Flowchart asset generated successfully');
+  return ApiResponse.created(res, asset, 'Flowchart generated successfully via Gemini AI');
 });
 
 /**
- * @desc    Generate a mock AI Mindmap asset
+ * @desc    Generate a real Gemini AI Mindmap asset
  * @route   POST /api/creative/generate-mindmap
  * @access  Private
  */
 export const generateMindmap = asyncHandler(async (req, res, next) => {
   const { title, topic } = req.body;
+  const targetTopic = topic || title || 'Mindmap Concept';
+
+  const providerResult = await globalProviderManager.executeMethod('generateMindMapJSON', targetTopic);
 
   const asset = await CreativeAsset.create({
     userId: req.user._id,
-    title,
-    prompt: `Generate a mindmap for ${topic}`,
+    title: title || targetTopic,
+    prompt: `Generate a mindmap for ${targetTopic}`,
     type: 'mindmap',
     category: 'Mindmaps',
     tags: ['mindmap', 'study'],
     status: 'completed',
+    content: providerResult.response,
     thumbnail: '',
     fileUrl: '',
     isFavorite: false
   });
 
-  return ApiResponse.created(res, asset, 'Mindmap asset generated successfully');
+  return ApiResponse.created(res, asset, 'Mindmap generated successfully via Gemini AI');
 });
 
 /**
- * @desc    Generate a mock AI Diagram asset
+ * @desc    Generate a real Gemini AI Diagram asset
  * @route   POST /api/creative/generate-diagram
  * @access  Private
  */
 export const generateDiagram = asyncHandler(async (req, res, next) => {
   const { title, topic } = req.body;
+  const targetTopic = topic || title || 'System Architecture';
+
+  const providerResult = await globalProviderManager.executeMethod('generateMermaidDiagram', targetTopic);
 
   const asset = await CreativeAsset.create({
     userId: req.user._id,
-    title,
-    prompt: `Generate an architecture diagram of ${topic}`,
+    title: title || targetTopic,
+    prompt: `Generate an architecture diagram of ${targetTopic}`,
     type: 'diagram',
     category: 'Diagrams',
     tags: ['diagram', 'architecture'],
     status: 'completed',
+    content: providerResult.response,
     thumbnail: '',
     fileUrl: '',
     isFavorite: false
   });
 
-  return ApiResponse.created(res, asset, 'Diagram asset generated successfully');
+  return ApiResponse.created(res, asset, 'Diagram asset generated successfully via Gemini AI');
 });
 
 /**

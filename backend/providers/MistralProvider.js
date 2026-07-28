@@ -14,7 +14,10 @@ export class MistralProvider extends BaseProvider {
   }
 
   async generateImage(prompt, options = {}) {
-    return { url: 'https://placehold.co/600x400/ea580c/white?text=Mistral+Image', prompt };
+    return {
+      error: 'Image generation is not yet supported by the configured provider.',
+      message: 'Image generation is not yet supported by the configured provider.'
+    };
   }
 
   async generateDiagram(prompt, options = {}) {

@@ -1,6 +1,7 @@
 import express from 'express';
 import { 
   createTask, 
+  batchCreateTasks,
   getTasks, 
   getTodayTasks, 
   updateTask, 
@@ -18,6 +19,7 @@ const router = express.Router();
 router.use(protect);
 
 router.post('/create', createTask);
+router.post('/batch-create', batchCreateTasks);
 router.get('/all', getTasks);
 router.get('/today', getTodayTasks);
 

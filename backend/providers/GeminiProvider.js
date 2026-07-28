@@ -4,12 +4,28 @@ import { PromptBuilder } from './PromptBuilder.js';
 
 export class GeminiProvider extends BaseProvider {
   constructor(config = {}) {
-    super({ name: 'Gemini', model: config.model || 'gemini-1.5-pro', ...config });
+    const configuredModel = config.model || process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+    super({ name: 'Gemini', model: configuredModel, ...config });
     
     this.apiKey = config.apiKey || process.env.GEMINI_API_KEY || '';
+    this.candidateModels = [
+      configuredModel,
+      'gemini-1.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-pro-latest',
+      'gemini-1.0-pro'
+    ];
+    this.candidateModels = [...new Set(this.candidateModels.filter(Boolean))];
+
     if (this.apiKey) {
       try {
         this.genAI = new GoogleGenerativeAI(this.apiKey);
+        console.log(`====================================================`);
+        console.log(`Gemini SDK Version: 0.24.1`);
+        console.log(`Configured Model: ${this.model}`);
+        console.log(`API Key Loaded: YES`);
+        console.log(`Provider Initialized Successfully`);
+        console.log(`====================================================`);
       } catch (err) {
         console.warn('[GeminiProvider] Initialization error:', err.message);
       }
@@ -17,164 +33,157 @@ export class GeminiProvider extends BaseProvider {
   }
 
   /**
-   * Helper to execute raw text generation with Gemini SDK
+   * Helper to execute text generation with Gemini SDK and model failover
    */
-  async _callGemini(promptText, modelName = null) {
+  async _callGemini(promptText, overrideModel = null) {
+    const startTime = Date.now();
+    
     if (!this.apiKey || !this.genAI) {
-      console.warn('[GeminiProvider] GEMINI_API_KEY not configured or invalid. Using fallback payload.');
-      return null;
+      throw new Error('GEMINI_API_KEY is missing in environment variables');
     }
 
-    try {
-      const model = this.genAI.getGenerativeModel({ model: modelName || this.model || 'gemini-1.5-pro' });
-      const result = await model.generateContent(promptText);
-      const response = await result.response;
-      return response.text();
-    } catch (error) {
-      console.error('[GeminiProvider SDK Error]:', error?.message || error);
-      throw error;
+    const modelsToTry = overrideModel ? [overrideModel, ...this.candidateModels] : this.candidateModels;
+    let lastError = null;
+
+    for (const modelName of modelsToTry) {
+      try {
+        console.log(`\n====================================================`);
+        console.log(`[PIPELINE LOG] Gemini Request Triggered`);
+        console.log(`[PIPELINE LOG] Provider: ${this.name} | Target Model: ${modelName}`);
+        console.log(`[PIPELINE LOG] Prompt Length: ${promptText ? promptText.length : 0} chars`);
+
+        const model = this.genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(promptText);
+        const response = await result.response;
+        const text = response.text();
+
+        if (!text) {
+          throw new Error(`Gemini returned empty text response for model ${modelName}`);
+        }
+
+        const elapsed = Date.now() - startTime;
+        console.log(`[PIPELINE LOG] Gemini Response Received in ${elapsed}ms (${text.length} chars) via ${modelName}`);
+        console.log(`====================================================\n`);
+
+        return text;
+      } catch (error) {
+        lastError = error;
+        const is404ModelError = error?.message?.includes('404') || error?.message?.includes('not found') || error?.message?.includes('generateContent');
+
+        if (is404ModelError) {
+          console.warn(`[GeminiProvider Model Warning] Model ${modelName} returned 404 or unsupported for generateContent. Attempting model fallback...`);
+          continue; // Try next candidate model
+        } else {
+          console.error(`[GeminiProvider SDK Error with ${modelName}]:`, error?.message || error);
+          throw error;
+        }
+      }
     }
+
+    // If all candidate models fail, throw error so ProviderManager can seamlessly failover to next provider
+    throw lastError || new Error('All Gemini candidate models failed to generate content');
   }
 
   /**
    * Safe helper to parse JSON outputs from LLM responses
    */
-  _parseJSON(text, fallbackObj) {
-    if (!text) return fallbackObj;
-    try {
-      // Clean possible ```json codeblocks
-      const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-      return JSON.parse(cleaned);
-    } catch (e) {
-      console.warn('[GeminiProvider] Failed to parse JSON response, returning fallback:', e.message);
-      return fallbackObj;
-    }
+  _parseJSON(text) {
+    if (!text) throw new Error('Empty response received from Gemini');
+    const cleaned = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+    return JSON.parse(cleaned);
   }
 
   /**
    * Safe helper to clean Mermaid diagram outputs
    */
-  _cleanMermaid(text, fallbackMermaid) {
-    if (!text) return fallbackMermaid;
+  _cleanMermaid(text) {
+    if (!text) throw new Error('Empty response received from Gemini');
     let cleaned = text.replace(/```mermaid/gi, '').replace(/```/g, '').trim();
     if (!cleaned.startsWith('graph')) {
-      cleaned = `graph TD;\n  A[${cleaned.slice(0, 40)}] --> B[Completed];`;
+      cleaned = `graph TD;\n  A[Gemini Output] --> B[${text.slice(0, 30)}...];`;
     }
     return cleaned;
   }
 
   // Mandatory Interface Implementations
 
-  async generateText(prompt, options = {}) {
-    const raw = await this._callGemini(prompt);
-    return raw || `[Gemini Output] Response for: "${prompt}"`;
+  async generateImage(prompt, options = {}) {
+    return {
+      error: 'Image generation is not yet supported by the configured provider.',
+      message: 'Image generation is not yet supported by the configured provider.'
+    };
   }
 
-  async chat(messages = [], options = {}) {
-    const historyText = messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
-    const prompt = `You are TaskPilot AI Assistant powered by Google Gemini.\n\nConversation Context:\n${historyText}\n\nPlease respond to the user's latest query accurately in Markdown.`;
-    
-    const raw = await this._callGemini(prompt);
-    return raw || `[Gemini Chat Response]: Processed query successfully.`;
+  async generateText(prompt, options = {}) {
+    return await this._callGemini(prompt);
+  }
+
+  async chat(messages, options = {}) {
+    const promptText = PromptBuilder.chatPrompt(messages);
+    return await this._callGemini(promptText);
   }
 
   async summarize(text, options = {}) {
-    const prompt = PromptBuilder.summaryPrompt(text);
-    const raw = await this._callGemini(prompt);
-    return raw || `• Summary Point 1: Key insight from content\n• Summary Point 2: Main technical takeaways\n• Summary Point 3: Actionable next step`;
+    const promptText = PromptBuilder.summaryPrompt(text);
+    return await this._callGemini(promptText);
   }
 
   async generateNotes(topic, options = {}) {
-    const prompt = PromptBuilder.notesPrompt(topic);
-    const raw = await this._callGemini(prompt);
-    return raw || `### ${topic} - Learning Notes\n\n#### Overview\nComprehensive structured notes on ${topic}.\n\n- Key Concept 1\n- Key Concept 2`;
+    const promptText = PromptBuilder.notesPrompt(topic);
+    return await this._callGemini(promptText);
   }
 
   async generateQuiz(topic, options = {}) {
-    const prompt = PromptBuilder.quizPrompt(topic);
-    const raw = await this._callGemini(prompt);
-    const fallback = [
-      { question: `What is the core principle of ${topic}?`, options: ['Concept A', 'Concept B', 'Concept C', 'Concept D'], answer: 0, explanation: `Concept A is fundamental to ${topic}.` }
-    ];
-    return this._parseJSON(raw, fallback);
+    const promptText = PromptBuilder.quizPrompt(topic);
+    const raw = await this._callGemini(promptText);
+    return this._parseJSON(raw);
   }
 
   async generateFlashcards(topic, options = {}) {
-    const prompt = PromptBuilder.flashcardsPrompt(topic);
-    const raw = await this._callGemini(prompt);
-    const fallback = [
-      { front: `What is ${topic}?`, back: `Core concept definition of ${topic}`, category: 'General' }
-    ];
-    return this._parseJSON(raw, fallback);
+    const promptText = PromptBuilder.flashcardsPrompt(topic);
+    const raw = await this._callGemini(promptText);
+    return this._parseJSON(raw);
   }
 
   async generateStudyPlan(topic, options = {}) {
-    const prompt = PromptBuilder.studyPlanPrompt(topic);
-    const raw = await this._callGemini(prompt);
-    const fallback = {
-      topic,
-      duration: '4 Weeks',
-      weeklyPlan: [
-        { week: 1, title: `Introduction to ${topic}`, goals: ['Master fundamentals'], dailyHours: 2 }
-      ]
-    };
-    return this._parseJSON(raw, fallback);
+    const promptText = PromptBuilder.studyPlanPrompt(topic);
+    const raw = await this._callGemini(promptText);
+    return this._parseJSON(raw);
   }
 
   async generateRoadmap(goal, options = {}) {
-    const prompt = PromptBuilder.roadmapPrompt(goal);
-    const raw = await this._callGemini(prompt);
-    const fallback = {
-      goal,
-      milestones: [
-        { step: 1, title: 'Phase 1: Foundations', description: `Learn fundamentals for ${goal}`, estimatedDays: 14, recommendedResources: ['Official Docs'] }
-      ]
-    };
-    return this._parseJSON(raw, fallback);
+    const promptText = PromptBuilder.roadmapPrompt(goal);
+    const raw = await this._callGemini(promptText);
+    return this._parseJSON(raw);
   }
 
   async generateTasks(goal, options = {}) {
-    const prompt = PromptBuilder.tasksPrompt(goal);
-    const raw = await this._callGemini(prompt);
-    const fallback = [
-      { title: `Study core concept for ${goal}`, category: 'Learning', priority: 'High', estimatedMinutes: 45, xpReward: 50 }
-    ];
-    return this._parseJSON(raw, fallback);
+    const promptText = PromptBuilder.tasksPrompt(goal);
+    const raw = await this._callGemini(promptText);
+    return this._parseJSON(raw);
   }
 
   async explainTopic(topic, options = {}) {
-    const prompt = PromptBuilder.explainPrompt(topic);
-    const raw = await this._callGemini(prompt);
-    return raw || `### Explaining ${topic}\n\n${topic} is a key software engineering concept. Let's break it down step-by-step...`;
+    const promptText = PromptBuilder.explainPrompt(topic);
+    return await this._callGemini(promptText);
   }
 
   async generateInterviewQuestions(topic, options = {}) {
-    const prompt = PromptBuilder.interviewPrompt(topic);
-    const raw = await this._callGemini(prompt);
-    const fallback = [
-      { question: `How does ${topic} work in production?`, difficulty: 'Medium', modelAnswer: `In production, ${topic} handles system tasks efficiently.`, keyKeywords: [topic] }
-    ];
-    return this._parseJSON(raw, fallback);
+    const promptText = PromptBuilder.interviewPrompt(topic);
+    const raw = await this._callGemini(promptText);
+    return this._parseJSON(raw);
   }
 
   async generateMermaidDiagram(topic, options = {}) {
-    const prompt = PromptBuilder.diagramPrompt(topic);
-    const raw = await this._callGemini(prompt);
-    const fallback = `graph TD;\n  A[${topic} Goal] --> B[Architecture Plan];\n  B --> C[Implementation];`;
-    return this._cleanMermaid(raw, fallback);
+    const promptText = PromptBuilder.diagramPrompt(topic);
+    const raw = await this._callGemini(promptText);
+    return this._cleanMermaid(raw);
   }
 
   async generateMindMapJSON(topic, options = {}) {
-    const prompt = PromptBuilder.mindmapPrompt(topic);
-    const raw = await this._callGemini(prompt);
-    const fallback = {
-      id: 'root',
-      label: topic,
-      children: [
-        { id: 'sub-1', label: 'Core Module', children: [{ id: 'leaf-1', label: 'Details' }] }
-      ]
-    };
-    return this._parseJSON(raw, fallback);
+    const promptText = PromptBuilder.mindmapPrompt(topic);
+    const raw = await this._callGemini(promptText);
+    return this._parseJSON(raw);
   }
 }
 

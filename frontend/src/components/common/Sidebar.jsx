@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, Cpu, Calendar, CheckSquare, 
-  GraduationCap, Palette, BarChart3, User, Settings, BookOpen, Sparkles, Brain, Zap, Network 
+  GraduationCap, Palette, BarChart3, TrendingUp, User, Settings, BookOpen, Sparkles, Brain, Zap, Network 
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -19,7 +19,7 @@ export const Sidebar = () => {
     { to: '/knowledge', label: 'Knowledge Base', icon: GraduationCap },
     { to: '/learning', label: 'Learning Hub', icon: BookOpen },
     { to: '/creative', label: 'Creative Hub', icon: Palette },
-    { to: '/analytics', label: 'Analytics Panel', icon: BarChart3 },
+    { to: '/analytics', label: 'Analytics Panel', icon: TrendingUp },
     { to: '/profile', label: 'Profile settings', icon: User },
     { to: '/settings', label: 'Configuration', icon: Settings },
   ];

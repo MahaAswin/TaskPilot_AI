@@ -34,58 +34,36 @@ export const createNote = asyncHandler(async (req, res, next) => {
   return ApiResponse.created(res, note, 'Study note saved successfully');
 });
 
+import { globalProviderManager } from '../providers/ProviderManager.js';
+
 /**
- * @desc    Simulate AI Note generation pipeline
+ * @desc    Generate AI Note via Gemini Provider
  * @route   POST /api/knowledge/generate
  * @access  Private
  */
 export const generateNote = asyncHandler(async (req, res, next) => {
   const { title, topic, keywords, description, category, tags, difficulty, language } = req.body;
+  const targetTopic = topic || title || 'General Computer Science';
 
   const keywordList = Array.isArray(keywords) 
     ? keywords 
-    : String(keywords).split(',').map(s => s.trim()).filter(Boolean);
+    : (keywords ? String(keywords).split(',').map(s => s.trim()).filter(Boolean) : []);
 
   const tagsList = Array.isArray(tags) 
     ? tags 
     : (tags ? String(tags).split(',').map(s => s.trim()).filter(Boolean) : []);
 
-  // Compile high-fidelity visual markdown placeholder body
-  const generatedContent = `### 📚 ${title} Summary Guide
-
-This guide details the core principles of **${topic}**, focusing on key terms: *${keywordList.join(', ')}*.
-
-#### 🔍 Core Concepts Explained
-The subject addresses multiple layered components:
-- **Core Node**: Primary operational parameter.
-- **Secondary Node**: Interconnected structural elements.
-
-#### 📊 Analytical Comparison Table
-| Part | Configuration | Key Function |
-| :--- | :--- | :--- |
-| **Component Alpha** | High Speed | Controls initial signal conversions |
-| **Component Beta** | Redundant | Manages backup integrity pipelines |
-| **Component Gamma** | Multi-Agent | Distributes workloads queries |
-
-> [!NOTE]
-> Study Tip: Review oxidative gradients details during morning hours to improve memory retention metrics by 22%.
-
-#### 🔬 Equations Blueprint
-The mathematical representation is modeled as:
-$$ E = mc^2 $$
-
-*Future visual flowcharts and mindmaps will render here once the Creative sub-agent is wired up.*`;
-
-  const generatedSummary = `A detailed study guide mapping ${topic} core structures, comparisons, and study tips.`;
+  const providerResult = await globalProviderManager.executeMethod('generateNotes', targetTopic);
+  const summaryResult = await globalProviderManager.executeMethod('summarize', providerResult.response);
 
   const note = await KnowledgeNote.create({
     userId: req.user._id,
-    title,
-    topic,
+    title: title || targetTopic,
+    topic: targetTopic,
     keywords: keywordList,
     description: description || '',
-    content: generatedContent,
-    summary: generatedSummary,
+    content: providerResult.response,
+    summary: summaryResult.response,
     category: category || 'General',
     tags: tagsList,
     difficulty: difficulty || 'intermediate',
@@ -95,7 +73,7 @@ $$ E = mc^2 $$
     isFavorite: false
   });
 
-  return ApiResponse.created(res, note, 'AI Note successfully generated and logged in Studio');
+  return ApiResponse.created(res, note, 'AI Note successfully generated via Gemini AI');
 });
 
 /**

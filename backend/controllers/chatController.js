@@ -154,8 +154,10 @@ export const getChatMessages = asyncHandler(async (req, res) => {
   return ApiResponse.success(res, messages, 'Conversation messages retrieved');
 });
 
+import coordinatorService from '../agents/coordinator/service/CoordinatorService.js';
+
 /**
- * @desc    Send a message to the coordinator agent
+ * @desc    Send a message to the coordinator agent and run Gemini AI pipeline
  * @route   POST /api/chat/:id/message
  * @access  Private
  */
@@ -176,77 +178,16 @@ export const postChatMessage = asyncHandler(async (req, res) => {
   };
   mockMessages[id].push(userMsg);
 
-  // Generate structured multi-agent response
-  const lowerPrompt = prompt.toLowerCase();
-  let aiResponse = '';
-  let traces = [];
-
-  if (lowerPrompt.includes('roadmap') || lowerPrompt.includes('plan')) {
-    aiResponse = `### 🗺️ Custom Strategic Roadmap
-
-Here is your step-by-step development roadmap:
-
-1. **Phase 1: Project Initiation**
-   - Define database models.
-   - Configure REST endpoint validations.
-2. **Phase 2: Authentication Handlers**
-   - Secure passwords hashing with bcrypt.
-   - Enforce JWT token authorizations.
-
-#### Project Milestones
-| Milestone | Timeline | Deliverables |
-| :--- | :--- | :--- |
-| **M1: Architecture** | Week 1 | Folder scaffolding |
-| **M2: Security** | Week 2 | JWT route safeguards |
-| **M3: Release** | Week 3 | Client page interfaces |`;
-    
-    traces = [
-      { agentName: 'CoordinatorAgent', status: 'completed', message: 'Routed to schedule planner agent.' },
-      { agentName: 'PlannerAgent', status: 'completed', message: 'Calculated project milestones and Gantt charts.' },
-      { agentName: 'TaskAgent', status: 'completed', message: 'Queued deliverables list into tasks board.' }
-    ];
-  } else if (lowerPrompt.includes('chart') || lowerPrompt.includes('mindmap')) {
-    aiResponse = `### 🎨 Visual Layout Generated
-
-Below is the structured schematic breakdown of your request.
-
-#### Diagram Summary
-- **Nodes**: 4 Active components
-- **Links**: Unidirectional flows
-- **Topic**: Data processing engine
-
-*Double-click the tab on the right panel preview deck to view high-fidelity mock representations.*`;
-
-    traces = [
-      { agentName: 'CoordinatorAgent', status: 'completed', message: 'Assigned request to Creative agent.' },
-      { agentName: 'CreativeAgent', status: 'completed', message: 'Rendered mind map nodes hierarchy.' }
-    ];
-  } else {
-    aiResponse = `### 🚀 Coordinator Core Output
-
-Thank you for your prompt: *"${prompt}"*.
-
-Here is a summary list of operational details:
-- **Status**: Scaffolding active.
-- **Service**: REST API routes are fully mapped.
-- **Scope**: Multi-agent timeliners are running.
-
-| Parameter | Configuration | Value |
-| :--- | :--- | :--- |
-| Core | Express.js | Mapped |
-| Client | React/Vite | Compiling |`;
-
-    traces = [
-      { agentName: 'CoordinatorAgent', status: 'completed', message: 'Analyzed request intent. No sub-agent required.' },
-      { agentName: 'ProductivityCoach', status: 'completed', message: 'Tracked response parameters score.' }
-    ];
-  }
+  // Execute multi-agent Gemini AI pipeline
+  const pipelineResult = await coordinatorService.executePipeline(prompt, { sessionId: id });
 
   const aiMsg = {
     _id: `msg-${Date.now()}-ai`,
     sender: 'assistant',
-    content: aiResponse,
-    agentTraces: traces,
+    content: pipelineResult.content || 'Gemini AI response synthesized',
+    agentTraces: pipelineResult.agentTraces || [
+      { agentName: 'CoordinatorAgent', status: 'completed', message: 'Executed request via Gemini AI.' }
+    ],
     createdAt: new Date()
   };
 
@@ -258,7 +199,7 @@ Here is a summary list of operational details:
     mockChats[chatIdx].updatedAt = new Date();
   }
 
-  return ApiResponse.success(res, aiMsg, 'Message response processed');
+  return ApiResponse.success(res, aiMsg, 'Message response processed via Gemini AI');
 });
 
 /**
