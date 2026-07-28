@@ -18,6 +18,7 @@ import Workspace from '../pages/workspace/Workspace';
 import Planner from '../pages/planner/Planner';
 import Tasks from '../pages/tasks/Tasks';
 import Knowledge from '../pages/knowledge/Knowledge';
+import Learning from '../pages/learning/Learning';
 import Creative from '../pages/creative/Creative';
 import Analytics from '../pages/analytics/Analytics';
 import Profile from '../pages/profile/Profile';
@@ -45,6 +46,7 @@ export const AppRoutes = () => {
         <Route path="/planner" element={<Planner />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/knowledge" element={<Knowledge />} />
+        <Route path="/learning" element={<Learning />} />
         <Route path="/creative" element={<Creative />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/profile" element={<Profile />} />
