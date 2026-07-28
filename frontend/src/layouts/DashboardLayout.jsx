@@ -10,7 +10,7 @@ export const DashboardLayout = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <LoadingSpinner size="large" />
       </div>
     );
@@ -21,7 +21,7 @@ export const DashboardLayout = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#09090b]">
+    <div className="min-h-screen flex flex-col bg-background text-textPrimary">
       <Navbar />
       <div className="flex-1 flex overflow-hidden w-full">
         <Sidebar />

@@ -9,7 +9,7 @@ export const WorkspaceLayout = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <LoadingSpinner size="large" />
       </div>
     );
@@ -20,9 +20,9 @@ export const WorkspaceLayout = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#09090b] overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-background text-textPrimary overflow-hidden">
       <Navbar />
-      <div className="flex-1 w-full bg-zinc-950/20 relative flex flex-col">
+      <div className="flex-1 w-full bg-slate-100/30 relative flex flex-col">
         <Outlet />
       </div>
     </div>

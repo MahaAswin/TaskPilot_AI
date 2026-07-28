@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('dark'); // Dark mode is default
+  const [theme, setTheme] = useState('light'); // Light mode is default now
 
   useEffect(() => {
     const root = window.document.documentElement;

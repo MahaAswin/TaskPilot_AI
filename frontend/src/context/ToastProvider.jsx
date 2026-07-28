@@ -14,11 +14,15 @@ export const ToastProvider = ({ children }) => {
       <Toaster
         position="bottom-right"
         toastOptions={{
-          className: 'glassmorphism border border-white/10 text-white',
+          className: 'border border-slate-200 text-slate-900 shadow-soft',
           style: {
-            background: 'rgba(24, 24, 27, 0.8)',
-            color: '#f4f4f5',
+            background: 'rgba(255, 255, 255, 0.95)',
+            color: '#0f172a',
             backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(15, 23, 42, 0.08)',
+            fontSize: '11px',
+            fontWeight: '600',
+            borderRadius: '12px',
           },
           success: {
             iconTheme: {

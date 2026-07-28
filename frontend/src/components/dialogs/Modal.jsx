@@ -1,54 +1,36 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 
-export const Modal = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  children 
-}) => {
+export const Modal = ({ isOpen, onClose, title, children }) => {
   return (
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          
-          {/* Backdrop Mask */}
+          {/* Backdrop mask */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black"
+            className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm"
           />
 
-          {/* Modal Container */}
+          {/* Modal Content */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="relative w-full max-w-lg glassmorphism rounded-2xl shadow-glass border border-white/10 p-6 z-10 bg-[#18181b]"
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="relative bg-white border border-slate-200 rounded-2xl shadow-xl w-full max-w-md p-6 z-10"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-200">{title}</h3>
-              <button 
-                onClick={onClose}
-                className="text-zinc-500 hover:text-zinc-300 transition-colors"
-                title="Close modal"
-              >
-                <X className="w-4.5 h-4.5" />
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">{title}</h3>
+              <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-700 transition-colors">
+                <X className="w-4 h-4" />
               </button>
             </div>
-
-            {/* Body */}
-            <div className="text-zinc-300 text-xs">
-              {children}
-            </div>
-
+            {children}
           </motion.div>
-
         </div>
       )}
     </AnimatePresence>

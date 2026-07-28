@@ -1,21 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export const GradientButton = ({ 
-  children, 
-  onClick, 
-  type = 'button', 
-  disabled = false, 
-  className = '' 
-}) => {
+export const GradientButton = ({ children, onClick, type = 'button', className = '', disabled = false }) => {
   return (
     <motion.button
-      whileHover={{ scale: disabled ? 1 : 1.02 }}
-      whileTap={{ scale: disabled ? 1 : 0.98 }}
+      whileHover={{ y: -1, scale: 1.01 }}
+      whileTap={{ y: 0, scale: 0.99 }}
+      disabled={disabled}
       type={type}
       onClick={onClick}
-      disabled={disabled}
-      className={`relative px-5 py-2.5 rounded-xl text-xs font-bold text-white tracking-wide bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 hover:opacity-90 transition-all duration-300 shadow-glow disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 transition-all shadow-soft hover:shadow-glow flex items-center justify-center gap-2 cursor-pointer border border-indigo-500/10 ${className}`}
     >
       {children}
     </motion.button>
