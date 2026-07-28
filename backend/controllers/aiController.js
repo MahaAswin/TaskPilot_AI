@@ -4,47 +4,57 @@ import { aiService } from '../services/aiService.js';
 
 export const chat = asyncHandler(async (req, res) => {
   const data = await aiService.chat(req.body.messages, req.body.options || {});
-  return ApiResponse.success(res, data, 'AI Chat response synthesized');
-});
-
-export const generateText = asyncHandler(async (req, res) => {
-  const data = await aiService.generateText(req.body.prompt, req.body.options || {});
-  return ApiResponse.success(res, data, 'AI Text generated');
+  return ApiResponse.success(res, data, 'Gemini AI Chat response synthesized');
 });
 
 export const summarizeText = asyncHandler(async (req, res) => {
-  const data = await aiService.summarizeText(req.body.text, req.body.options || {});
-  return ApiResponse.success(res, data, 'AI Summary generated');
+  const data = await aiService.summarize(req.body.text || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI Summary generated');
 });
 
-export const explainTopic = asyncHandler(async (req, res) => {
-  const data = await aiService.explainTopic(req.body.topic, req.body.options || {});
-  return ApiResponse.success(res, data, 'AI Explanation generated');
-});
-
-export const generateImage = asyncHandler(async (req, res) => {
-  const data = await aiService.generateImage(req.body.prompt, req.body.options || {});
-  return ApiResponse.success(res, data, 'AI Image asset generated');
-});
-
-export const generateDiagram = asyncHandler(async (req, res) => {
-  const data = await aiService.generateDiagram(req.body.prompt, req.body.options || {});
-  return ApiResponse.success(res, data, 'AI Diagram generated');
-});
-
-export const generateMindMap = asyncHandler(async (req, res) => {
-  const data = await aiService.generateMindMap(req.body.prompt, req.body.options || {});
-  return ApiResponse.success(res, data, 'AI MindMap generated');
+export const generateNotes = asyncHandler(async (req, res) => {
+  const data = await aiService.generateNotes(req.body.topic || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI Notes generated');
 });
 
 export const generateQuiz = asyncHandler(async (req, res) => {
-  const data = await aiService.generateQuiz(req.body.topic, req.body.options || {});
-  return ApiResponse.success(res, data, 'AI Quiz generated');
+  const data = await aiService.generateQuiz(req.body.topic || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI Quiz generated');
 });
 
 export const generateFlashcards = asyncHandler(async (req, res) => {
-  const data = await aiService.generateFlashcards(req.body.topic, req.body.options || {});
-  return ApiResponse.success(res, data, 'AI Flashcards generated');
+  const data = await aiService.generateFlashcards(req.body.topic || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI Flashcards generated');
+});
+
+export const generateStudyPlan = asyncHandler(async (req, res) => {
+  const data = await aiService.generateStudyPlan(req.body.topic || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI Study Plan generated');
+});
+
+export const generateRoadmap = asyncHandler(async (req, res) => {
+  const data = await aiService.generateRoadmap(req.body.goal || req.body.topic || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI Roadmap generated');
+});
+
+export const generateTasks = asyncHandler(async (req, res) => {
+  const data = await aiService.generateTasks(req.body.goal || req.body.topic || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI Actionable Tasks generated');
+});
+
+export const generateInterviewQuestions = asyncHandler(async (req, res) => {
+  const data = await aiService.generateInterviewQuestions(req.body.topic || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI Interview Questions generated');
+});
+
+export const generateMermaidDiagram = asyncHandler(async (req, res) => {
+  const data = await aiService.generateMermaidDiagram(req.body.topic || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI Mermaid Diagram generated');
+});
+
+export const generateMindMapJSON = asyncHandler(async (req, res) => {
+  const data = await aiService.generateMindMapJSON(req.body.topic || req.body.prompt, req.body.options || {});
+  return ApiResponse.success(res, data, 'Gemini AI MindMap JSON generated');
 });
 
 export const getProviders = asyncHandler(async (req, res) => {
@@ -59,14 +69,16 @@ export const getProviderHealth = asyncHandler(async (req, res) => {
 
 export default {
   chat,
-  generateText,
   summarizeText,
-  explainTopic,
-  generateImage,
-  generateDiagram,
-  generateMindMap,
+  generateNotes,
   generateQuiz,
   generateFlashcards,
+  generateStudyPlan,
+  generateRoadmap,
+  generateTasks,
+  generateInterviewQuestions,
+  generateMermaidDiagram,
+  generateMindMapJSON,
   getProviders,
   getProviderHealth
 };

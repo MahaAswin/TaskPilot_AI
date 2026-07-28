@@ -1,4 +1,4 @@
-// Provider Manager Engine (Fallback Chain & Unified Invocation)
+// Provider Manager Engine (Configurable AI Provider Router & Gemini Integration)
 
 import { ProviderRegistry } from './ProviderRegistry.js';
 import { ResponseFormatter } from './ResponseFormatter.js';
@@ -6,21 +6,32 @@ import { ProviderHealthMonitor } from './ProviderHealthMonitor.js';
 
 export class ProviderManager {
   constructor() {
-    this.fallbackPriority = ['gemini', 'grok', 'openai', 'claude', 'deepseek', 'mistral', 'ollama', 'mock'];
+    this.activeProviderName = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
   }
 
+  /**
+   * Get active AI provider instance
+   */
+  getProvider(providerName = null) {
+    const target = (providerName || this.activeProviderName || 'gemini').toLowerCase();
+    return ProviderRegistry.getProviderInstance(target);
+  }
+
+  /**
+   * Execute provider method with fallback safety
+   */
   async executeMethod(methodName, prompt, options = {}) {
     const startTime = Date.now();
-    const preferredProvider = (options.provider || 'mock').toLowerCase();
+    const targetProviderName = (options.provider || this.activeProviderName || 'gemini').toLowerCase();
 
-    // Build fallback chain starting with preferred provider
-    const chain = [preferredProvider, ...this.fallbackPriority.filter(p => p !== preferredProvider)];
+    // Secondary fallback order
+    const chain = [targetProviderName, 'gemini', 'mock'];
 
     let lastError = null;
 
-    for (const providerName of chain) {
+    for (const pName of chain) {
       try {
-        const provider = ProviderRegistry.getProviderInstance(providerName, options);
+        const provider = ProviderRegistry.getProviderInstance(pName, options);
         if (typeof provider[methodName] === 'function') {
           const rawResult = await provider[methodName](prompt, options);
           const latencyMs = Date.now() - startTime;
@@ -30,21 +41,21 @@ export class ProviderManager {
             agentName: options.agent || 'Coordinator Agent',
             responseBody: typeof rawResult === 'string' ? rawResult : JSON.stringify(rawResult),
             latencyMs,
-            tokenCount: Math.round(prompt.length / 4) + 120,
-            metadata: { model: provider.model, fallbackTriggered: providerName !== preferredProvider }
+            tokenCount: Math.round((typeof prompt === 'string' ? prompt.length : 100) / 4) + 120,
+            metadata: { model: provider.model, fallbackTriggered: pName !== targetProviderName }
           });
         }
       } catch (err) {
-        console.warn(`[ProviderManager Fallback] ${providerName} failed: ${err.message}. Trying next in chain...`);
+        console.warn(`[ProviderManager Fallback] ${pName} failed for ${methodName}: ${err.message}. Trying fallback...`);
         lastError = err;
       }
     }
 
-    // Ultimate mock fallback guarantee
-    const fallbackProvider = ProviderRegistry.getProviderInstance('mock', options);
-    const rawResult = await fallbackProvider[methodName](prompt, options);
+    // Ultimate mock fallback
+    const mockProvider = ProviderRegistry.getProviderInstance('mock', options);
+    const rawResult = await mockProvider[methodName](prompt, options);
     return ResponseFormatter.format({
-      providerName: 'MockProvider (Ultimate Fallback)',
+      providerName: 'MockProvider (Fallback)',
       agentName: options.agent || 'Coordinator Agent',
       responseBody: typeof rawResult === 'string' ? rawResult : JSON.stringify(rawResult),
       latencyMs: Date.now() - startTime,
