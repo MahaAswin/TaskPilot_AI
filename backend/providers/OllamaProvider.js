@@ -6,7 +6,7 @@ export class OllamaProvider extends BaseProvider {
   constructor(config = {}) {
     super({ 
       name: 'Ollama', 
-      model: config.model || process.env.OLLAMA_MODEL || 'llama3:8b', 
+      model: config.model || process.env.OLLAMA_MODEL || 'qwen3:8b', 
       baseUrl: config.baseUrl || process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
       ...config 
     });
@@ -14,29 +14,86 @@ export class OllamaProvider extends BaseProvider {
 
   async isHealthy() {
     try {
-      await axios.get(`${this.baseUrl}/api/tags`, { timeout: 1200 });
+      await axios.get(`${this.baseUrl}/api/tags`, { timeout: 3000 });
       return true;
     } catch {
       return false;
     }
   }
 
-  async _callOllama(promptText) {
-    const response = await axios.post(
-      `${this.baseUrl}/api/generate`,
-      {
-        model: this.model,
-        prompt: promptText,
-        stream: false
-      },
-      { timeout: 15000 }
-    );
-
-    const text = response.data?.response;
-    if (!text) {
-      throw new Error('Ollama returned empty response string');
+  async getAvailableModel() {
+    try {
+      const res = await axios.get(`${this.baseUrl}/api/tags`, { timeout: 3000 });
+      const models = res.data?.models || [];
+      if (models.length > 0) {
+        const found = models.find(m => m.name === this.model || m.model === this.model);
+        if (found) return found.name || found.model;
+        return models[0].name || models[0].model;
+      }
+    } catch (e) {
+      console.warn('[OllamaProvider] Failed to fetch tags:', e.message);
     }
-    return text;
+    return this.model || 'qwen3:8b';
+  }
+
+  async _callOllama(promptText) {
+    let targetModel = this.model;
+    try {
+      const response = await axios.post(
+        `${this.baseUrl}/api/generate`,
+        {
+          model: targetModel,
+          prompt: promptText,
+          stream: false,
+          options: {
+            num_predict: 750
+          }
+        },
+        { timeout: 120000 }
+      );
+
+      const text = response.data?.response;
+      if (!text) {
+        throw new Error('Ollama returned empty response string');
+      }
+      return this._cleanThinking(text);
+    } catch (err) {
+      const isNotFound = err.response?.status === 404 || 
+                         err.message?.includes('not found') || 
+                         err.response?.data?.error?.includes('not found');
+
+      if (isNotFound) {
+        const fallbackModel = await this.getAvailableModel();
+        if (fallbackModel && fallbackModel !== targetModel) {
+          console.log(`[OllamaProvider] Target model '${targetModel}' not available. Auto-switching to '${fallbackModel}'...`);
+          this.model = fallbackModel;
+          const retryRes = await axios.post(
+            `${this.baseUrl}/api/generate`,
+            {
+              model: fallbackModel,
+              prompt: promptText,
+              stream: false,
+              options: {
+                num_predict: 750
+              }
+            },
+            { timeout: 120000 }
+          );
+          const text = retryRes.data?.response;
+          if (text) return this._cleanThinking(text);
+        }
+      }
+      throw err;
+    }
+  }
+
+  _cleanThinking(text) {
+    if (!text) return '';
+    let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    if (!cleaned) {
+      cleaned = text.replace(/<\/?think>/gi, '').trim();
+    }
+    return cleaned;
   }
 
   _parseJSON(text) {

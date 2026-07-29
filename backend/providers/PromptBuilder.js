@@ -161,6 +161,9 @@ JSON Structure:
   }
 
   static explainPrompt(topic) {
+    if (typeof topic === 'string' && (topic.length > 80 || topic.startsWith('Describe') || topic.includes('\n'))) {
+      return topic;
+    }
     return `Provide a clear, engaging, step-by-step explanation of "${topic}" suitable for a developer.
 Use analogies, clear code snippets if applicable, and highlight key takeaways in Markdown.`;
   }

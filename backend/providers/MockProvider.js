@@ -49,7 +49,10 @@ export class MockProvider extends BaseProvider {
   }
 
   async explainTopic(topic, options = {}) {
-    return `[Mock Explanation]: Comprehensive explanation of ${topic}.`;
+    if (typeof topic === 'string' && (topic.startsWith('Describe') || topic.length > 50)) {
+      return `### 🎨 Visual Breakdown & Analysis\n\n- **Subject Focus**: Detailed rendering based on original prompt instructions.\n- **Artistic Style & Composition**: Rich atmospheric balance with high dynamic depth, structured color palette, and dramatic focal points.\n- **Lighting & Atmosphere**: Carefully balanced volumetric lighting with vibrant accent highlights and deep shadows.`;
+    }
+    return `Detailed visual breakdown and conceptual explanation of ${topic}.`;
   }
 
   async generateNotes(topic, options = {}) {

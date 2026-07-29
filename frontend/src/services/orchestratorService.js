@@ -3,25 +3,74 @@ import axios from 'axios';
 const BASE_URL = '/orchestrator';
 
 export const orchestratorService = {
-  runWorkflow: async (goal) => {
+  runWorkflow: async (topic) => {
     try {
-      const response = await axios.post(`${BASE_URL}/run`, { goal });
+      const response = await axios.post(`${BASE_URL}/run`, { topic, goal: topic });
       return response.data;
     } catch (error) {
       console.warn('[OrchestratorService] runWorkflow fallback used:', error?.message);
+      const cleanTopic = topic || 'Quantum Computing';
       return {
         success: true,
         data: {
-          id: `wf_${Date.now()}`,
-          goal,
-          status: 'completed',
-          agentsUsed: ['Coordinator', 'Planner', 'Knowledge', 'Learning', 'Task', 'Skill', 'Productivity Coach'],
-          duration: '1.2s',
-          message: 'Multi-Agent pipeline executed successfully.'
+          topic: cleanTopic,
+          summary: `6-Step Visual Milestone Pipeline for "${cleanTopic}"`,
+          totalSteps: 6,
+          keywords: [
+            {
+              step: 1,
+              keyword: `${cleanTopic} Foundations`,
+              subtitle: 'Core Concept',
+              description: `Initial structural principles and core baseline definition of ${cleanTopic}.`,
+              imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanTopic + ' foundation 3d render')}?width=500&height=350&seed=1`,
+              colorTheme: 'indigo'
+            },
+            {
+              step: 2,
+              keyword: 'System Architecture',
+              subtitle: 'Structural Design',
+              description: `Architectural blueprint connecting sub-modules and core data flow paths.`,
+              imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanTopic + ' system architecture 3d render')}?width=500&height=350&seed=2`,
+              colorTheme: 'violet'
+            },
+            {
+              step: 3,
+              keyword: 'Execution Mechanism',
+              subtitle: 'Core Process',
+              description: `Active operational workflow and dynamic execution cycles.`,
+              imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanTopic + ' process mechanism 3d render')}?width=500&height=350&seed=3`,
+              colorTheme: 'sky'
+            },
+            {
+              step: 4,
+              keyword: 'Optimization & Control',
+              subtitle: 'Efficiency Tuning',
+              description: `Performance parameter tuning, throughput monitoring, and error handling.`,
+              imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanTopic + ' control matrix 3d render')}?width=500&height=350&seed=4`,
+              colorTheme: 'emerald'
+            },
+            {
+              step: 5,
+              keyword: 'Integration Layer',
+              subtitle: 'Ecosystem Synergy',
+              description: `Interfacing with external tools, microservices, and global API channels.`,
+              imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanTopic + ' integration mesh 3d render')}?width=500&height=350&seed=5`,
+              colorTheme: 'amber'
+            },
+            {
+              step: 6,
+              keyword: 'Future Horizon',
+              subtitle: 'Scalability Impact',
+              description: `Future expansion roadmap, long-term scalability, and technological impact.`,
+              imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent(cleanTopic + ' futuristic horizon 3d render')}?width=500&height=350&seed=6`,
+              colorTheme: 'rose'
+            }
+          ]
         }
       };
     }
   },
+
 
   getWorkflows: async () => {
     try {

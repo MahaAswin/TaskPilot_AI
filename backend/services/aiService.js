@@ -90,7 +90,7 @@ export const aiService = {
     return [
       { id: 'gemini', name: 'Gemini', model: process.env.GEMINI_MODEL || 'gemini-1.5-flash', providerClass: 'GeminiProvider', isDefault: true, isEnabled: true },
       { id: 'grok', name: 'Grok (xAI)', model: 'grok-beta', providerClass: 'GrokProvider', isDefault: false, isEnabled: true },
-      { id: 'ollama', name: 'Ollama (Local)', model: 'llama3:8b', providerClass: 'OllamaProvider', isDefault: false, isEnabled: true },
+      { id: 'ollama', name: 'Ollama (Local)', model: process.env.OLLAMA_MODEL || 'qwen3:8b', providerClass: 'OllamaProvider', isDefault: false, isEnabled: true },
       { id: 'openrouter', name: 'OpenRouter', model: 'meta-llama/llama-3.1-8b-instruct:free', providerClass: 'OpenRouterProvider', isDefault: false, isEnabled: true },
       { id: 'huggingface', name: 'HuggingFace', model: 'mistralai/Mistral-7B-Instruct-v0.2', providerClass: 'HuggingFaceProvider', isDefault: false, isEnabled: true },
       { id: 'openai', name: 'OpenAI', model: 'gpt-4o', providerClass: 'OpenAIProvider', isDefault: false, isEnabled: true },

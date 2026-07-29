@@ -11,9 +11,10 @@ import protect from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+router.post('/run', runWorkflow);
+
 router.use(protect);
 
-router.post('/run', runWorkflow);
 router.get('/workflows', getWorkflows);
 router.get('/history', getHistory);
 router.get('/context', getContext);
@@ -21,3 +22,4 @@ router.get('/logs', getLogs);
 router.post('/replay', replayWorkflow);
 
 export default router;
+

@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, Cpu, Calendar, CheckSquare, 
-  GraduationCap, Palette, BarChart3, TrendingUp, User, Settings, BookOpen, Sparkles, Brain, Zap, Network 
+  GraduationCap, Palette, BarChart3, TrendingUp, User, Settings, BookOpen, Sparkles, Brain, Zap, Network, ShieldCheck, Mail, Phone 
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -10,6 +10,13 @@ export const Sidebar = () => {
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/workspace', label: 'AI Workspace', icon: Cpu },
     { to: '/orchestrator', label: 'Agent Orchestrator', icon: Network },
+    { to: '/email-agent', label: 'Email Agent', icon: Mail },
+    { to: '/scanner-agent', label: 'Scanner Agent', icon: ShieldCheck },
+    { to: '/spam-agent', label: 'Email Security Agent', icon: Mail },
+    { to: '/phone-agent', label: 'Phone Intelligence Agent', icon: Phone },
+
+
+
     { to: '/ai-providers', label: 'AI Providers', icon: Sparkles },
     { to: '/planning-canvas', label: 'AI Planning Canvas', icon: Sparkles },
     { to: '/planner', label: 'Plan Matrix', icon: Calendar },
@@ -23,6 +30,8 @@ export const Sidebar = () => {
     { to: '/profile', label: 'Profile settings', icon: User },
     { to: '/settings', label: 'Configuration', icon: Settings },
   ];
+
+
 
   return (
     <aside className="w-64 border-r border-slate-200 bg-white/40 backdrop-blur-md h-[calc(100vh-4rem)] flex flex-col shrink-0">

@@ -29,6 +29,11 @@ import SkillCenter from '../pages/skills/SkillCenter';
 import ProductivityCenter from '../pages/productivity/ProductivityCenter';
 import OrchestratorCenter from '../pages/orchestrator/OrchestratorCenter';
 import AIProviderCenter from '../pages/ai/AIProviderCenter';
+import SecurityAI from '../pages/security/SecurityAI';
+import ScannerAgent from '../pages/security/ScannerAgent';
+import SpamAgent from '../pages/security/SpamAgent';
+import PhoneAgent from '../pages/security/PhoneAgent';
+import EmailAgent from '../pages/email/EmailAgent';
 import NotFound from '../pages/error/NotFound';
 
 export const AppRoutes = () => {
@@ -56,14 +61,26 @@ export const AppRoutes = () => {
         <Route path="/skills" element={<SkillCenter />} />
         <Route path="/productivity" element={<ProductivityCenter />} />
         <Route path="/orchestrator" element={<OrchestratorCenter />} />
+        <Route path="/email-agent" element={<EmailAgent />} />
         <Route path="/ai-providers" element={<AIProviderCenter />} />
+        <Route path="/security-ai" element={<ScannerAgent />} />
+        <Route path="/scanner-agent" element={<ScannerAgent />} />
+        <Route path="/spam-agent" element={<SpamAgent />} />
+        <Route path="/email-security-agent" element={<SpamAgent />} />
+        <Route path="/phone-agent" element={<PhoneAgent />} />
+        <Route path="/phone-intelligence-agent" element={<PhoneAgent />} />
+
+
+
         <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/learning" element={<Learning />} />
         <Route path="/creative" element={<Creative />} />
         <Route path="/analytics" element={<Analytics />} />
+
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
+
 
       {/* 4. Protected Full-Bleed Workspace Canvas */}
       <Route element={<WorkspaceLayout />}>

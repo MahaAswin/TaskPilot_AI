@@ -8,12 +8,18 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// 1. Ensure dotenv loads BEFORE any route or provider code imports execute with override: true
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '../.env'), override: true });
+dotenv.config({ override: true });
+
+// 2. Route & Database imports (loaded AFTER dotenv)
 import connectDB from './database/connection.js';
 import loggerMiddleware from './middleware/loggerMiddleware.js';
 import notFound from './middleware/notFoundMiddleware.js';
 import errorHandler from './middleware/errorMiddleware.js';
 
-// Route imports
 import authRoutes from './routes/authRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
@@ -28,13 +34,8 @@ import planningRoutes from './routes/planningRoutes.js';
 import skillRoutes from './routes/skillRoutes.js';
 import orchestratorRoutes from './routes/orchestratorRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load env configuration
-dotenv.config({ path: path.join(__dirname, '../.env') });
-dotenv.config();
+import securityRoutes from './routes/securityRoutes.js';
+import emailRoutes from './routes/emailRoutes.js';
 
 // Mongoose Connection
 connectDB();
@@ -82,6 +83,8 @@ app.use('/api/productivity', productivityRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/coordinator', coordinatorRouter);
 app.use('/api/learning', learningRoutes);
+app.use('/api/security', securityRoutes);
+app.use('/api/email', emailRoutes);
 
 // Fallbacks
 app.use(notFound);
@@ -91,4 +94,6 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`[Server] TaskPilot AI enterprise server listening on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+  console.log(`[OAuth Config] GOOGLE_CLIENT_ID: ${process.env.GOOGLE_CLIENT_ID}`);
+  console.log(`[OAuth Config] GOOGLE_REDIRECT_URI: ${process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/email/google/callback'}`);
 });

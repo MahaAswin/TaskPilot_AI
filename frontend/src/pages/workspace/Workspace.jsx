@@ -46,16 +46,30 @@ export const Workspace = () => {
     { label: 'Summarize Concept', query: 'Explain the mitochondria in a simple table' }
   ];
 
-  // Fetch chats on mount
+  // Fetch chats on mount and initialize a fresh new workspace session
   useEffect(() => {
     const fetchChats = async () => {
       try {
         const res = await axios.get('/chat');
+        let existingChats = [];
         if (res.data?.success) {
-          setChats(res.data.data);
-          if (res.data.data.length > 0) {
-            setActiveChatId(res.data.data[0]._id);
+          existingChats = res.data.data || [];
+        }
+
+        // Always create a new workspace session on arrival
+        try {
+          const createRes = await axios.post('/chat', { title: 'New AI Session', folder: 'Default' });
+          if (createRes.data?.success) {
+            const newChat = createRes.data.data;
+            setChats([newChat, ...existingChats]);
+            setActiveChatId(newChat._id);
+          } else {
+            setChats(existingChats);
+            if (existingChats.length > 0) setActiveChatId(existingChats[0]._id);
           }
+        } catch (createErr) {
+          setChats(existingChats);
+          if (existingChats.length > 0) setActiveChatId(existingChats[0]._id);
         }
       } catch (err) {
         showError('Failed to fetch conversation history.');

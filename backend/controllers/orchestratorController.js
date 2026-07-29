@@ -3,9 +3,11 @@ import ApiResponse from '../utils/ApiResponse.js';
 import { orchestratorService } from '../services/orchestratorService.js';
 
 export const runWorkflow = asyncHandler(async (req, res) => {
-  const data = await orchestratorService.runPipeline(req.body.goal);
-  return ApiResponse.success(res, data, 'Multi-Agent pipeline executed successfully');
+  const topic = req.body.topic || req.body.goal || 'Quantum Computing';
+  const data = await orchestratorService.generateTopicPipeline(topic);
+  return ApiResponse.success(res, data, 'Topic-to-Image Pipeline generated successfully');
 });
+
 
 export const getWorkflows = asyncHandler(async (req, res) => {
   const data = await orchestratorService.getWorkflowsData();
