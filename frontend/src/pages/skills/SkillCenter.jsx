@@ -40,7 +40,125 @@ export const SkillCenter = () => {
   const [evaluatedRank, setEvaluatedRank] = useState('Master');
   const [radarChartData, setRadarChartData] = useState([]);
   const [aiRecommendations, setAiRecommendations] = useState([]);
-  const [llmProviderName, setLlmProviderName] = useState('Grok (xAI)');
+  const [llmProviderName, setLlmProviderName] = useState('TaskPilot Assessment Engine');
+
+  // Comprehensive Bank of Default MCQs for instant loading
+  const getDefaultMCQsForSkills = (skills, diff = 'Intermediate') => {
+    const defaultBank = {
+      'React': [
+        {
+          id: 'react-1',
+          skill: 'React',
+          question: 'Which React hook is used for performing side effects in functional components?',
+          options: ['useEffect', 'useState', 'useContext', 'useReducer'],
+          answer: 0,
+          explanation: 'useEffect is the standard React hook designed for handling side effects like data fetching and DOM mutations.'
+        },
+        {
+          id: 'react-2',
+          skill: 'React',
+          question: 'What is the primary benefit of the React Virtual DOM?',
+          options: [
+            'Minimizes real DOM manipulation by computing diffs in memory',
+            'Directly connects React components to backend databases',
+            'Replaces CSS stylesheets with inline JS objects',
+            'Bypasses JavaScript execution entirely'
+          ],
+          answer: 0,
+          explanation: 'The Virtual DOM creates an in-memory representation to compute minimal UI diffs before updating the real DOM.'
+        }
+      ],
+      'Node.js': [
+        {
+          id: 'node-1',
+          skill: 'Node.js',
+          question: 'Which mechanism in Node.js handles non-blocking asynchronous I/O operations?',
+          options: ['Event Loop & libuv thread pool', 'Synchronous file descriptors', 'Thread locking system', 'Multi-process socket pipeline'],
+          answer: 0,
+          explanation: 'Node.js relies on a single-threaded Event Loop backed by libuv to execute non-blocking asynchronous I/O.'
+        },
+        {
+          id: 'node-2',
+          skill: 'Node.js',
+          question: 'What is the purpose of package.json in a Node.js project?',
+          options: ['Stores project metadata, scripts, and dependency declarations', 'Executes Linux OS kernel binaries', 'Configures database indexes', 'Compiles C++ native modules'],
+          answer: 0,
+          explanation: 'package.json contains project configuration, dependencies, and npm run script definitions.'
+        }
+      ],
+      'Data Structures & Algorithms': [
+        {
+          id: 'dsa-1',
+          skill: 'Data Structures & Algorithms',
+          question: 'What is the average time complexity of searching in a Balanced Binary Search Tree (AVL / Red-Black Tree)?',
+          options: ['O(log n)', 'O(n)', 'O(1)', 'O(n²)'],
+          answer: 0,
+          explanation: 'A balanced BST maintains logarithmic height, guaranteeing O(log n) search, insertion, and deletion complexity.'
+        },
+        {
+          id: 'dsa-2',
+          skill: 'Data Structures & Algorithms',
+          question: 'Which algorithmic paradigm does Merge Sort utilize?',
+          options: ['Divide and Conquer', 'Greedy Choice', 'Dynamic Programming', 'Backtracking'],
+          answer: 0,
+          explanation: 'Merge Sort recursively breaks arrays into halves, sorts them, and merges the sorted halves using Divide and Conquer.'
+        }
+      ],
+      'System Design': [
+        {
+          id: 'sys-1',
+          skill: 'System Design',
+          question: 'Which component distributes incoming user traffic across multiple backend application servers?',
+          options: ['Load Balancer', 'Database Shard', 'Garbage Collector', 'Reverse DNS Proxy'],
+          answer: 0,
+          explanation: 'Load balancers distribute traffic across multiple nodes to maximize throughput, minimize latency, and ensure fault tolerance.'
+        }
+      ],
+      'Python': [
+        {
+          id: 'py-1',
+          skill: 'Python',
+          question: 'What is the primary feature of Python list comprehensions?',
+          options: ['Constructs new lists from iterables in a single concise line', 'Deletes unused global variables', 'Compiles Python bytecode to C', 'Enforces static type constraints'],
+          answer: 0,
+          explanation: 'List comprehensions provide a compact, expressive syntax for creating new lists based on existing iterables.'
+        }
+      ],
+      'SQL & Databases': [
+        {
+          id: 'sql-1',
+          skill: 'SQL & Databases',
+          question: 'Which SQL clause is used to filter individual records before any GROUP BY aggregations take place?',
+          options: ['WHERE', 'HAVING', 'GROUP BY', 'ORDER BY'],
+          answer: 0,
+          explanation: 'WHERE filters individual rows prior to grouping, while HAVING filters aggregated group results after grouping.'
+        }
+      ]
+    };
+
+    let questions = [];
+    skills.forEach(skill => {
+      if (defaultBank[skill]) {
+        questions.push(...defaultBank[skill]);
+      } else {
+        questions.push({
+          id: `custom-${skill}-1`,
+          skill: skill,
+          question: `Which of the following represents a core engineering best practice in ${skill}?`,
+          options: [
+            `Writing modular, testable code with clean exception handling in ${skill}`,
+            `Hardcoding secret tokens directly into source files`,
+            `Disabling automated test suites before deploying to production`,
+            `Bypassing version control and code review workflows`
+          ],
+          answer: 0,
+          explanation: `Modular architecture, clean error handling, and robust testing are essential for professional ${skill} development.`
+        });
+      }
+    });
+
+    return questions.slice(0, 5);
+  };
 
   // Toggle quick skills selection
   const handleToggleSkill = (skill) => {
@@ -66,7 +184,7 @@ export const SkillCenter = () => {
     setCustomSkillInput('');
   };
 
-  // Generate MCQs using LLM
+  // Generate MCQs using instant default fallback or fast API response
   const handleGenerateMCQAssessment = async () => {
     if (selectedSkills.length === 0) {
       showError('Please select at least one skill to generate assessment.');
@@ -75,58 +193,59 @@ export const SkillCenter = () => {
 
     setAssessmentState('generating');
     
+    // Prepare default instant questions
+    const defaultQuestions = getDefaultMCQsForSkills(selectedSkills, difficulty);
+
     try {
       const skillsTopicPrompt = selectedSkills.join(', ');
       const options = { difficulty, count: 5 };
       
-      const res = await aiService.generateQuiz(skillsTopicPrompt, options);
+      // Fast Promise.race with 1-second timeout to prevent any loading delay
+      const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 1000));
+      
+      const res = await Promise.race([
+        aiService.generateQuiz(skillsTopicPrompt, options).catch(() => null),
+        timeoutPromise
+      ]);
 
+      let questions = [];
       if (res) {
-        setLlmProviderName(res.provider || 'Grok (xAI)');
-        
-        let questions = [];
+        setLlmProviderName(res.provider || 'TaskPilot Assessment Engine');
         const rawData = res.data?.data || res.data;
-        
         if (Array.isArray(rawData) && rawData.length > 0) {
           questions = rawData;
         } else if (Array.isArray(res.data) && res.data.length > 0) {
           questions = res.data;
-        } else {
-          // Dynamic fallback structured questions mapped to selected skills
-          questions = selectedSkills.slice(0, 5).map((skill, idx) => ({
-            id: `q-${idx + 1}`,
-            skill: skill,
-            question: `Which of the following is considered a best practice in ${skill}?`,
-            options: [
-              `Optimizing state updates and minimizing unnecessary re-renders in ${skill}`,
-              `Bypassing error boundary handlers and synchronous exceptions`,
-              `Using hardcoded global variables instead of scoped dependency injection`,
-              `Disabling structural type-checking and schema validation`
-            ],
-            answer: 0,
-            explanation: `Proper optimization and scoped state handling is fundamental to high-performance ${skill} development.`
-          }));
         }
-
-        // Format questions
-        const formattedQuestions = questions.map((q, idx) => ({
-          id: q.id || `q-${idx + 1}`,
-          skill: q.skill || selectedSkills[idx % selectedSkills.length],
-          question: q.question || `Assessment question on ${selectedSkills[idx % selectedSkills.length]}`,
-          options: q.options || ['Option A', 'Option B', 'Option C', 'Option D'],
-          answer: typeof q.answer === 'number' ? q.answer : 0,
-          explanation: q.explanation || 'Review core documentation and theoretical concepts.'
-        }));
-
-        setQuizQuestions(formattedQuestions);
-        setCurrentQuestionIdx(0);
-        setUserAnswers({});
-        setAssessmentState('quiz');
-        showSuccess(`Generated ${formattedQuestions.length} MCQs via ${res.provider || 'AI Provider'}!`);
       }
+
+      if (!questions || questions.length === 0) {
+        setLlmProviderName('TaskPilot Assessment Engine (Default)');
+        questions = defaultQuestions;
+      }
+
+      // Format questions
+      const formattedQuestions = questions.map((q, idx) => ({
+        id: q.id || `q-${idx + 1}`,
+        skill: q.skill || selectedSkills[idx % selectedSkills.length],
+        question: q.question || `Assessment question on ${selectedSkills[idx % selectedSkills.length]}`,
+        options: q.options || ['Option A', 'Option B', 'Option C', 'Option D'],
+        answer: typeof q.answer === 'number' ? q.answer : 0,
+        explanation: q.explanation || 'Review core documentation and theoretical concepts.'
+      }));
+
+      setQuizQuestions(formattedQuestions);
+      setCurrentQuestionIdx(0);
+      setUserAnswers({});
+      setAssessmentState('quiz');
+      showSuccess(`Loaded ${formattedQuestions.length} skill assessment MCQs!`);
     } catch (err) {
-      showError('Failed to generate MCQ assessment: ' + (err?.response?.data?.message || err?.message));
-      setAssessmentState('input');
+      setLlmProviderName('TaskPilot Assessment Engine (Default)');
+      setQuizQuestions(defaultQuestions);
+      setCurrentQuestionIdx(0);
+      setUserAnswers({});
+      setAssessmentState('quiz');
+      showSuccess(`Loaded skill assessment MCQs!`);
     }
   };
 
@@ -138,7 +257,7 @@ export const SkillCenter = () => {
     });
   };
 
-  // Submit Quiz & Evaluate Score via LLM
+  // Submit Quiz & Evaluate Score
   const handleSubmitAssessment = async () => {
     let correctCount = 0;
     const skillScoresMap = {};
@@ -178,10 +297,10 @@ export const SkillCenter = () => {
     // Build Dynamic Skill Radar Chart Data
     const radarData = selectedSkills.map(s => {
       const stats = skillScoresMap[s];
-      let skillPct = 70; // baseline
+      let skillPct = 70;
       if (stats && stats.total > 0) {
         skillPct = Math.round((stats.correct / stats.total) * 100);
-        if (skillPct === 0) skillPct = 40; // minimum visual threshold
+        if (skillPct === 0) skillPct = 40;
       } else {
         skillPct = Math.min(100, scorePct + Math.floor(Math.random() * 15) - 5);
       }
@@ -220,7 +339,7 @@ export const SkillCenter = () => {
       <div className="space-y-8 w-full">
         
         {/* Header Banner */}
-        <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-white relative overflow-hidden">
+        <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative z-10 space-y-4">
@@ -238,311 +357,290 @@ export const SkillCenter = () => {
                 LLM Provider: {llmProviderName}
               </span>
             </div>
-
-            {/* Quick Status Bar when in Results Mode */}
-            {assessmentState === 'results' && (
-              <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-indigo-500/20 text-xs">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-amber-400" />
-                  <span>Evaluated Score: <strong>{evaluatedScore}%</strong></span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-indigo-400" />
-                  <span>Rank: <strong>{evaluatedRank}</strong></span>
-                </div>
-                <button
-                  onClick={() => setAssessmentState('input')}
-                  className="ml-auto px-3 py-1 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-bold text-white transition-all flex items-center gap-1 cursor-pointer"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  <span>Retake / New Skill Test</span>
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* 1. INPUT & SKILL SELECTION STATE */}
+        {/* ASSESSMENT STEP 1: INPUT & SKILL SELECTION */}
         {assessmentState === 'input' && (
           <motion.div 
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-soft space-y-6"
+            className="space-y-6"
           >
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-indigo-600" />
-                <span>Select & Configure Your Skills</span>
-              </h2>
-              <p className="text-xs text-slate-500">Select your tech stack skills below. The LLM will generate tailored MCQs to evaluate your proficiency.</p>
-            </div>
-
-            {/* Popular Skills Pills */}
-            <div className="space-y-2">
-              <label className="text-xs font-extrabold text-slate-700 block">Popular Tech Stack Skills:</label>
-              <div className="flex flex-wrap gap-2">
-                {POPULAR_SKILLS.map((skill) => {
-                  const isSelected = selectedSkills.includes(skill);
-                  return (
-                    <button
-                      key={skill}
-                      onClick={() => handleToggleSkill(skill)}
-                      className={`px-3 py-1.5 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${
-                        isSelected 
-                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' 
-                          : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                      }`}
-                    >
-                      {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
-                      <span>{skill}</span>
-                    </button>
-                  );
-                })}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-soft space-y-6">
+              <div className="border-b border-slate-100 pb-4">
+                <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
+                  <Target className="w-5 h-5 text-indigo-600" />
+                  <span>Configure Skill Assessment Targets</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">Select the technical domains you want to test and benchmark.</p>
               </div>
-            </div>
 
-            {/* Custom Skill Input */}
-            <div className="space-y-2">
-              <label className="text-xs font-extrabold text-slate-700 block">Add Custom Skill / Domain:</label>
-              <div className="flex gap-2 max-w-md">
-                <input
-                  type="text"
-                  value={customSkillInput}
-                  onChange={(e) => setCustomSkillInput(e.target.value)}
-                  placeholder="e.g. GraphQL, Rust, Cyber Security..."
-                  className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-900 focus:outline-none focus:border-indigo-500"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleAddCustomSkill();
-                  }}
-                />
+              {/* Popular Skills Selection Chips */}
+              <div className="space-y-3">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block">Popular Skill Domains:</label>
+                <div className="flex flex-wrap gap-2">
+                  {POPULAR_SKILLS.map((skill) => {
+                    const isSelected = selectedSkills.includes(skill);
+                    return (
+                      <button
+                        key={skill}
+                        onClick={() => handleToggleSkill(skill)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-2 ${
+                          isSelected
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20 scale-[1.02]'
+                            : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200'
+                        }`}
+                      >
+                        {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
+                        <span>{skill}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Add Custom Skill Input */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block">Add Custom Skill or Framework:</label>
+                <div className="flex gap-2 max-w-md">
+                  <input
+                    type="text"
+                    value={customSkillInput}
+                    onChange={(e) => setCustomSkillInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAddCustomSkill(); }}
+                    placeholder="e.g. Next.js, Kubernetes, GraphQL..."
+                    className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
+                  />
+                  <button
+                    onClick={handleAddCustomSkill}
+                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Difficulty Selector & Launch Button */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-slate-500">Target Difficulty:</span>
+                  <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+                    {['Beginner', 'Intermediate', 'Advanced'].map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setDifficulty(d)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          difficulty === d 
+                            ? 'bg-white text-indigo-600 shadow-sm' 
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button
-                  onClick={handleAddCustomSkill}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-2xl flex items-center gap-1 cursor-pointer"
+                  onClick={handleGenerateMCQAssessment}
+                  className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg hover:shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" />
-                  <span>Add</span>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Start Skill Assessment</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
-            </div>
-
-            {/* Selected Skills Chips Display */}
-            <div className="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 space-y-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-900 block">
-                Target Skills for Assessment ({selectedSkills.length}):
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {selectedSkills.map((s) => (
-                  <span 
-                    key={s}
-                    className="px-3 py-1 bg-white border border-indigo-200 rounded-xl text-xs font-bold text-indigo-700 flex items-center gap-1.5 shadow-sm"
-                  >
-                    <span>{s}</span>
-                    <button
-                      onClick={() => handleToggleSkill(s)}
-                      className="text-slate-400 hover:text-rose-500 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Assessment Difficulty Options */}
-            <div className="space-y-2">
-              <label className="text-xs font-extrabold text-slate-700 block">Assessment Target Level:</label>
-              <div className="grid grid-cols-3 gap-3 max-w-md">
-                {['Beginner', 'Intermediate', 'Advanced'].map((lvl) => (
-                  <button
-                    key={lvl}
-                    onClick={() => setDifficulty(lvl)}
-                    className={`py-2.5 px-3 rounded-2xl text-xs font-bold border transition-all text-center cursor-pointer ${
-                      difficulty === lvl 
-                        ? 'bg-indigo-50 border-indigo-500 text-indigo-600 shadow-sm' 
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    {lvl}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Generate Action Button */}
-            <div className="pt-4 border-t border-slate-100">
-              <button
-                onClick={handleGenerateMCQAssessment}
-                className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg hover:shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 animate-pulse" />
-                <span>Generate AI MCQ Assessment</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
             </div>
           </motion.div>
         )}
 
-        {/* 2. GENERATING STATE MODAL */}
+        {/* ASSESSMENT STEP 2: GENERATING SPINNER */}
         {assessmentState === 'generating' && (
-          <div className="bg-white border border-slate-200/90 rounded-3xl p-12 text-center space-y-6 shadow-soft">
-            <div className="relative w-16 h-16 mx-auto flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-indigo-600/20 animate-ping" />
-              <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-                <Brain className="w-7 h-7 animate-spin" />
-              </div>
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-16 text-center shadow-soft space-y-6">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center mx-auto shadow-inner">
+              <Brain className="w-8 h-8 text-indigo-600 animate-bounce" />
             </div>
-            <div>
+            <div className="space-y-2 max-w-md mx-auto">
               <h3 className="text-base font-black uppercase tracking-wider text-slate-900">Synthesizing Customized MCQs</h3>
-              <p className="text-xs text-slate-500 mt-1">Generating AI questions for {selectedSkills.join(', ')} via {llmProviderName}...</p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Generating skill assessment questions for {selectedSkills.join(', ')}...
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
             </div>
           </div>
         )}
 
-        {/* 3. MCQ QUIZ PLAYER STATE */}
+        {/* ASSESSMENT STEP 3: INTERACTIVE MCQ QUIZ */}
         {assessmentState === 'quiz' && quizQuestions.length > 0 && (
           <motion.div 
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-soft space-y-6"
+            className="space-y-6 max-w-4xl mx-auto"
           >
-            {/* Quiz Player Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
-                  Skill Tag: {quizQuestions[currentQuestionIdx]?.skill}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-soft space-y-6">
+              
+              {/* Question Progress Header */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full text-xs font-black uppercase">
+                    Question {currentQuestionIdx + 1} of {quizQuestions.length}
+                  </span>
+                  <span className="px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-full text-xs font-bold">
+                    Domain: {quizQuestions[currentQuestionIdx]?.skill}
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-slate-400">
+                  {Math.round(((currentQuestionIdx + 1) / quizQuestions.length) * 100)}% Complete
                 </span>
-                <h3 className="text-sm font-black text-slate-900 mt-2">
-                  Question {currentQuestionIdx + 1} of {quizQuestions.length}
+              </div>
+
+              {/* Question Body */}
+              <div className="space-y-4">
+                <h3 className="text-base font-extrabold text-slate-900 leading-snug">
+                  {quizQuestions[currentQuestionIdx]?.question}
                 </h3>
-              </div>
 
-              {/* Progress Indicator */}
-              <div className="w-36 bg-slate-100 h-2 rounded-full overflow-hidden">
-                <div 
-                  className="bg-indigo-600 h-full transition-all duration-300"
-                  style={{ width: `${((currentQuestionIdx + 1) / quizQuestions.length) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Question Box */}
-            <div className="space-y-4">
-              <p className="text-sm font-bold text-slate-900 leading-relaxed bg-slate-50 border border-slate-200/80 rounded-2xl p-5">
-                {quizQuestions[currentQuestionIdx]?.question}
-              </p>
-
-              {/* Options Grid */}
-              <div className="space-y-2.5">
-                {quizQuestions[currentQuestionIdx]?.options.map((opt, optIdx) => {
-                  const isSelected = userAnswers[currentQuestionIdx] === optIdx;
-                  return (
-                    <button
-                      key={optIdx}
-                      onClick={() => handleSelectOption(currentQuestionIdx, optIdx)}
-                      className={`w-full p-4 rounded-2xl text-xs font-bold border text-left transition-all flex items-center justify-between cursor-pointer ${
-                        isSelected 
-                          ? 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-sm' 
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${
-                          isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'
+                {/* MCQ Options List */}
+                <div className="space-y-3 pt-2">
+                  {quizQuestions[currentQuestionIdx]?.options.map((optionText, optIdx) => {
+                    const isSelected = userAnswers[currentQuestionIdx] === optIdx;
+                    return (
+                      <button
+                        key={optIdx}
+                        onClick={() => handleSelectOption(currentQuestionIdx, optIdx)}
+                        className={`w-full p-4 rounded-2xl text-xs font-semibold border transition-all text-left flex items-start gap-3 cursor-pointer ${
+                          isSelected
+                            ? 'bg-indigo-50/90 border-indigo-500 text-indigo-950 font-bold shadow-sm'
+                            : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200/80 text-slate-800'
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5 ${
+                          isSelected ? 'bg-indigo-600 text-white border-indigo-600' : 'border-slate-300 text-slate-500 bg-white'
                         }`}>
                           {String.fromCharCode(65 + optIdx)}
-                        </span>
-                        <span>{opt}</span>
-                      </div>
-                      {isSelected && <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />}
-                    </button>
-                  );
-                })}
+                        </div>
+                        <span className="flex-1 leading-relaxed">{optionText}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            {/* Navigation Controls */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-              <button
-                disabled={currentQuestionIdx === 0}
-                onClick={() => setCurrentQuestionIdx(currentQuestionIdx - 1)}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 text-xs font-bold rounded-xl flex items-center gap-2 cursor-pointer"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Previous</span>
-              </button>
+              {/* Navigation Controls */}
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                <button
+                  disabled={currentQuestionIdx === 0}
+                  onClick={() => setCurrentQuestionIdx(prev => prev - 1)}
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Previous</span>
+                </button>
 
-              {currentQuestionIdx < quizQuestions.length - 1 ? (
-                <button
-                  onClick={() => setCurrentQuestionIdx(currentQuestionIdx + 1)}
-                  className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-sm cursor-pointer"
-                >
-                  <span>Next Question</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmitAssessment}
-                  className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-black uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-md cursor-pointer"
-                >
-                  <CheckSquare className="w-4 h-4" />
-                  <span>Submit Assessment & Evaluate</span>
-                </button>
-              )}
+                {currentQuestionIdx < quizQuestions.length - 1 ? (
+                  <button
+                    onClick={() => setCurrentQuestionIdx(prev => prev + 1)}
+                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                  >
+                    <span>Next Question</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSubmitAssessment}
+                    className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-lg"
+                  >
+                    <CheckSquare className="w-4 h-4" />
+                    <span>Submit & Evaluate Assessment</span>
+                  </button>
+                )}
+              </div>
+
             </div>
           </motion.div>
         )}
 
-        {/* 4. EVALUATION RESULTS & RADAR DASHBOARD */}
+        {/* ASSESSMENT STEP 4: RADAR ANALYTICS & AI RECOMMENDATIONS */}
         {assessmentState === 'results' && (
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-8 w-full"
           >
-            {/* Score Metrics Header Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {/* Score & Rank Hero Card */}
+            <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 text-white shadow-2xl space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-indigo-500/20 pb-4 gap-4">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-400/30">
+                    Evaluation Complete
+                  </span>
+                  <h2 className="text-xl font-extrabold text-white mt-2 flex items-center gap-2">
+                    <Trophy className="w-6 h-6 text-amber-400" />
+                    Skill Proficiency Evaluation Results
+                  </h2>
+                </div>
+
+                <button
+                  onClick={() => setAssessmentState('input')}
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/15 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Re-Take Assessment</span>
+                </button>
+              </div>
+
+              {/* Score Badges Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Overall Score</span>
+                  <div className="text-3xl font-black text-white">{evaluatedScore}%</div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Proficiency Rank</span>
+                  <div className="text-2xl font-black text-emerald-400">{evaluatedRank}</div>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Evaluated Domains</span>
+                  <div className="text-2xl font-black text-indigo-300">{selectedSkills.length} Skills</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Radar Chart & Recommendations Viewport */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
               
-              {/* Overall Score */}
-              <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-soft text-center space-y-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Overall Skill Score</span>
-                <div className="text-3xl font-black text-indigo-600">{evaluatedScore} / 100</div>
-                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden max-w-xs mx-auto">
-                  <div className="bg-indigo-600 h-full transition-all duration-500" style={{ width: `${evaluatedScore}%` }} />
+              {/* Left 6 Columns: Radar Chart Component */}
+              <div className="lg:col-span-6 w-full">
+                <RadarChartCard 
+                  data={radarChartData} 
+                  overallScore={evaluatedScore} 
+                  evaluatedRank={evaluatedRank} 
+                />
+              </div>
+
+              {/* Right 6 Columns: AI Skill Recommendations */}
+              <div className="lg:col-span-6 space-y-4 w-full">
+                <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4 text-indigo-600" />
+                    <span>AI Learning Recommendations ({aiRecommendations.length})</span>
+                  </h3>
+                </div>
+
+                <div className="space-y-4">
+                  {aiRecommendations.map((rec) => (
+                    <RecommendationCard key={rec.id} recommendation={rec} />
+                  ))}
                 </div>
               </div>
 
-              {/* Mastery Rank */}
-              <div className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-3xl p-6 shadow-lg text-center space-y-2">
-                <span className="text-[10px] font-black uppercase tracking-wider opacity-80 block">Evaluated Mastery Rank</span>
-                <div className="text-3xl font-black">{evaluatedRank}</div>
-                <p className="text-[10px] opacity-80">Based on LLM MCQ performance across {selectedSkills.length} domains.</p>
-              </div>
-
-              {/* Evaluated Skills Count */}
-              <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-soft text-center space-y-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Tested Domains</span>
-                <div className="text-3xl font-black text-slate-900">{selectedSkills.length} Skills</div>
-                <p className="text-[10px] text-slate-500">Evaluated via {llmProviderName}</p>
-              </div>
             </div>
-
-            {/* DYNAMIC SVG SKILL RADAR CHART */}
-            <RadarChartCard data={radarChartData} />
-
-            {/* AI RECOMMENDATIONS ENGINE */}
-            <RecommendationCard recommendations={aiRecommendations} />
-
-            {/* Action Bar */}
-            <div className="flex justify-center pt-4">
-              <button
-                onClick={() => setAssessmentState('input')}
-                className="px-8 py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider rounded-2xl shadow-lg transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span>Configure New Skill Assessment</span>
-              </button>
-            </div>
-
           </motion.div>
         )}
 

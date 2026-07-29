@@ -9,65 +9,56 @@
   }
 }
 
-/* Premium Light Theme Glassmorphism */
+/* Premium Light Theme Glassmorphism & UI Design Utilities */
 .glassmorphism {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .glassmorphism-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(15, 23, 42, 0.05);
-  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.03), 0 4px 15px -3px rgba(15, 23, 42, 0.02);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.04), 0 4px 15px -3px rgba(15, 23, 42, 0.02);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glassmorphism-card:hover {
-  border-color: rgba(79, 70, 229, 0.15);
-  box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.08), 0 4px 15px -3px rgba(15, 23, 42, 0.02);
+  border-color: rgba(79, 70, 229, 0.25);
+  box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.12), 0 4px 15px -3px rgba(15, 23, 42, 0.03);
+  transform: translateY(-2px);
 }
 
 .glassmorphism-input {
   background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   color: #0f172a;
   transition: all 0.2s ease-in-out;
 }
 
 .glassmorphism-input:focus {
   outline: none;
-  border-color: rgba(79, 70, 229, 0.4);
-  box-shadow: 0 0 10px rgba(79, 70, 229, 0.08);
+  border-color: rgba(79, 70, 229, 0.5);
+  box-shadow: 0 0 14px rgba(79, 70, 229, 0.12);
 }
 
-/* Custom Scrollbar for Light Theme */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.02);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.08);
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.15);
-}
-
-/* Light theme ambient glow backgrounds */
+/* Custom Ambient Glow Backgrounds */
 .bg-glow-radial {
-  background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.03) 0%, transparent 65%);
+  background: radial-gradient(circle at 50% 20%, rgba(79, 70, 229, 0.04) 0%, rgba(124, 58, 237, 0.02) 45%, transparent 75%);
 }
 
+.bg-mesh-gradient {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.06) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.04) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.04) 0px, transparent 50%);
+}
+
+/* Gradient Text Utilities */
 .text-gradient {
   background: linear-gradient(135deg, #0f172a 30%, #475569 100%);
   -webkit-background-clip: text;
@@ -80,19 +71,52 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* Mermaid graph style customizations for Light Theme */
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glowing Border Effect */
+.glow-border-indigo {
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.18);
+  border-color: rgba(79, 70, 229, 0.35);
+}
+
+/* Custom Scrollbar for Sleek Interface */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.12);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 70, 229, 0.3);
+}
+
+/* Mermaid graph style customizations */
 .mermaid svg {
   background: transparent !important;
   color: #0f172a !important;
 }
 
-/* Custom animation extensions */
+/* Animations */
 @keyframes pulseGlow {
   0%, 100% {
-    opacity: 0.2;
+    opacity: 0.3;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.4;
+    opacity: 0.6;
+    transform: scale(1.02);
   }
 }
 

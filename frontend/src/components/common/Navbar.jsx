@@ -11,36 +11,47 @@ export const Navbar = () => {
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard' },
-    { path: '/workspace', label: 'Workspace' },
-    { path: '/tasks', label: 'Tasks' },
+    { path: '/workspace', label: 'AI Workspace' },
+    { path: '/email-agent', label: 'Email Agent' },
   ];
 
   return (
-    <nav className="glassmorphism w-full border-b border-slate-200 bg-white/80 sticky top-0 z-50 backdrop-blur-md flex flex-col">
-      {/* Premium top gradient strip */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500" />
+    <nav className="glassmorphism w-full border-b border-slate-200/80 bg-white/85 sticky top-0 z-50 backdrop-blur-xl flex flex-col shadow-sm">
+      {/* Top ambient gradient line */}
+      <div className="h-[3px] w-full bg-gradient-to-r from-indigo-500 via-purple-500 via-cyan-500 to-emerald-400" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex items-center justify-between h-16">
           
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <Cpu className="w-5 h-5 text-indigo-600" />
-            <span className="font-extrabold text-sm tracking-wider text-slate-900 uppercase">
-              TaskPilot <span className="text-indigo-600">AI</span>
+          {/* Logo & Platform Status Badge */}
+          <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform">
+                <Cpu className="w-4 h-4" />
+              </div>
+              <span className="font-black text-base tracking-tight text-slate-900">
+                TaskPilot <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">AI</span>
+              </span>
+            </Link>
+
+            <span className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Multi-Agent Engine Active
             </span>
-          </Link>
+          </div>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-1 bg-slate-100/70 p-1 rounded-2xl border border-slate-200/60">
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`text-xs font-bold tracking-wide transition-all ${
-                    isActive ? 'text-indigo-600 font-extrabold' : 'text-slate-500 hover:text-slate-900'
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive
+                      ? 'bg-white text-indigo-600 shadow-sm border border-slate-200/60 font-extrabold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
                   }`}
                 >
                   {item.label}
@@ -49,36 +60,38 @@ export const Navbar = () => {
             })}
           </div>
 
-          {/* Utility Tools */}
-          <div className="flex items-center gap-4">
+          {/* Utility Tools & User Profile */}
+          <div className="flex items-center gap-3">
             {user && (
               <div className="hidden sm:flex flex-col items-end leading-none pr-1">
-                <span className="text-[10px] font-bold text-slate-800">{user.name}</span>
-                <span className="text-[8px] font-black text-emerald-600 font-mono mt-1">SCORE: {user.productivityScore}%</span>
+                <span className="text-xs font-extrabold text-slate-800">{user.name}</span>
+                <span className="text-[9px] font-black text-emerald-600 font-mono mt-1 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200">
+                  XP SCORE: {user.productivityScore || 95}%
+                </span>
               </div>
             )}
 
             <button
               onClick={toggleTheme}
-              className="text-slate-400 hover:text-slate-800 transition-colors"
-              title="Toggle Theme"
+              className="p-2 rounded-xl border border-slate-200/60 hover:border-slate-300 text-slate-500 hover:text-slate-800 bg-white/60 hover:bg-white transition-all shadow-sm"
+              title="Notifications & Alerts"
             >
               <Bell className="w-4 h-4" />
             </button>
 
             <Link
               to="/settings"
-              className="text-slate-400 hover:text-slate-800 transition-colors"
-              title="Settings"
+              className="p-2 rounded-xl border border-slate-200/60 hover:border-slate-300 text-slate-500 hover:text-slate-800 bg-white/60 hover:bg-white transition-all shadow-sm"
+              title="System Settings"
             >
               <Settings className="w-4 h-4" />
             </Link>
 
             <Link
               to="/profile"
-              className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 flex items-center justify-center font-bold text-xs text-slate-800"
+              className="w-9 h-9 rounded-xl border-2 border-indigo-200 bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-extrabold text-xs flex items-center justify-center shadow-md shadow-indigo-100 hover:scale-105 transition-transform"
             >
-              {user?.name?.[0]?.toUpperCase() || 'OP'}
+              {user?.name?.[0]?.toUpperCase() || 'TP'}
             </Link>
           </div>
 

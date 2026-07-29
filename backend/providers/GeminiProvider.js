@@ -11,9 +11,8 @@ export class GeminiProvider extends BaseProvider {
     this.candidateModels = [
       configuredModel,
       'gemini-1.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-pro-latest',
-      'gemini-1.0-pro'
+      'gemini-1.5-pro',
+      'gemini-2.0-flash-exp'
     ];
     this.candidateModels = [...new Set(this.candidateModels.filter(Boolean))];
 

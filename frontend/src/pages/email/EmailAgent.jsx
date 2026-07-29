@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Mail, Sparkles, Send, RefreshCw, Trash2, Paperclip, CheckCircle2,
@@ -12,6 +13,11 @@ import { emailService } from '../../services/emailService';
 
 export const EmailAgent = () => {
   const { showSuccess, showError } = useToast();
+  const location = useLocation();
+
+  // Mode 2: Job Application Navigation State
+  const [isJobAppMode, setIsJobAppMode] = useState(false);
+  const [jobAppDetails, setJobAppDetails] = useState(null);
 
   // Gmail Connection State
   const [gmailState, setGmailState] = useState({ connected: false, email: '' });
@@ -46,7 +52,7 @@ export const EmailAgent = () => {
     { label: 'Thank You Letter', text: 'Thank the hiring manager for conducting a great technical interview.' }
   ];
 
-  // Fetch Gmail Connection Status on Mount
+  // Fetch Gmail Connection Status & Process Mode 2 Transferred State on Mount
   useEffect(() => {
     fetchGmailStatus();
 
@@ -59,7 +65,31 @@ export const EmailAgent = () => {
       // Clean query params from URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, []);
+
+    // MODE 2: One-Time Consumption of Job Application Data
+    if (location.state?.fromJobApplication) {
+      const data = location.state;
+      setIsJobAppMode(true);
+      setJobAppDetails({
+        companyName: data.companyName || 'Target Enterprise',
+        jobRole: data.jobRole || 'Software Engineer',
+        applicationId: data.applicationId || 'APP-2026'
+      });
+
+      if (data.recipient) setRecipientEmail(data.recipient);
+      if (data.subject) setSubject(data.subject);
+      if (data.body) setGeneratedBody(data.body);
+      if (data.attachments && Array.isArray(data.attachments)) {
+        setAttachments(data.attachments);
+      }
+      setSelectedTone('Job Application');
+
+      showSuccess(`Job Application Mode: Email & Attachments Pre-filled for ${data.companyName || 'Target Enterprise'}`);
+
+      // ONE-TIME CONSUMPTION: Immediately wipe browser history state so refresh/navigation opens in Normal Mode
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [location.state]);
 
   const fetchGmailStatus = async () => {
     setIsCheckingGmail(true);
@@ -70,6 +100,22 @@ export const EmailAgent = () => {
       console.warn('Failed to fetch Gmail status:', err);
     } finally {
       setIsCheckingGmail(false);
+    }
+  };
+
+  // Reset Email Form & Exit Job Application Mode (without disconnecting Gmail)
+  const resetForm = (silent = false) => {
+    setRecipientEmail('');
+    setSubject('');
+    setEmailPrompt('');
+    setSelectedTone('Professional');
+    setGeneratedBody('');
+    setAttachments([]);
+    setIsJobAppMode(false);
+    setJobAppDetails(null);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    if (!silent) {
+      showSuccess('Email form reset to Normal Mode.');
     }
   };
 
@@ -140,15 +186,9 @@ export const EmailAgent = () => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Clear Form
+  // Clear Form Action
   const handleClear = () => {
-    setRecipientEmail('');
-    setSubject('');
-    setEmailPrompt('');
-    setSelectedTone('Professional');
-    setGeneratedBody('');
-    setAttachments([]);
-    showSuccess('Email form cleared.');
+    resetForm(false);
   };
 
   // Send Email Action via Gmail API
@@ -192,6 +232,9 @@ export const EmailAgent = () => {
       });
 
       showSuccess(response?.message || 'Email sent successfully via Gmail API!');
+
+      // Post-Send Session Reset: Wipes compose fields & resets to Normal Mode immediately
+      resetForm(true);
     } catch (err) {
       showError(err.message || 'Failed to send email via Gmail API.');
     } finally {
@@ -226,6 +269,30 @@ export const EmailAgent = () => {
             </div>
           </div>
         </div>
+
+        {/* 1.5. Job Application Mode Active Banner */}
+        {isJobAppMode && (
+          <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border border-indigo-500/40 rounded-2xl p-5 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shrink-0">
+                <Sparkles className="w-5 h-5 text-indigo-300" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-indigo-300">Job Application Mode Active</h3>
+                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">Auto Pre-filled</span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1">
+                  Pre-filled application email for <strong className="text-white font-bold">{jobAppDetails?.companyName}</strong> ({jobAppDetails?.jobRole}). Review details below, connect Gmail if needed, and click Send.
+                </p>
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <span className="text-[10px] font-mono text-slate-400 block uppercase">Application ID</span>
+              <span className="text-xs font-mono font-bold text-indigo-300">{jobAppDetails?.applicationId || 'APP-2026'}</span>
+            </div>
+          </div>
+        )}
 
         {/* 2. Google OAuth & Gmail Connection Status Banner */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">

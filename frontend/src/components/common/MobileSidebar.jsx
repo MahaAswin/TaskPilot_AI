@@ -6,11 +6,7 @@ export const MobileSidebar = ({ isOpen, onClose }) => {
   const links = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/workspace', label: 'AI Workspace', icon: Cpu },
-    { to: '/planner', label: 'Plan Matrix', icon: Calendar },
-    { to: '/tasks', label: 'Tasks Queue', icon: CheckSquare },
-    { to: '/knowledge', label: 'Knowledge Base', icon: GraduationCap },
     { to: '/creative', label: 'Creative Hub', icon: Palette },
-    { to: '/analytics', label: 'Analytics Panel', icon: BarChart3 },
     { to: '/profile', label: 'Profile settings', icon: User },
     { to: '/settings', label: 'Configuration', icon: Settings },
   ];

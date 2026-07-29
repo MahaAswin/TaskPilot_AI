@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { 
   GraduationCap, BookOpen, Star, Sparkles, Play, Search, 
   Tv, Youtube, ExternalLink, Bookmark, Copy, CheckCircle2, 
-  Loader2, ThumbsUp, Eye, Clock, Award, FileText, ArrowRight, Notebook
+  Loader2, ThumbsUp, Eye, Clock, Award, FileText, ArrowRight, Notebook,
+  SearchX
 } from 'lucide-react';
 import PageContainer from '../../components/common/PageContainer';
 import { useToast } from '../../context/ToastProvider';
@@ -14,7 +15,7 @@ export const Learning = () => {
 
   // Search & Topic state
   const [topicInput, setTopicInput] = useState('');
-  const [activeTopic, setActiveTopic] = useState('React JS Tutorial for Beginners');
+  const [activeTopic, setActiveTopic] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
   // Video & AI Notes Data
@@ -32,7 +33,7 @@ export const Learning = () => {
     "SQL & Database Design Fundamentals"
   ];
 
-  // Default Pre-Populated YouTube Video Tutorials
+  // Default Fallback Videos (used only if API search returns empty)
   const DEFAULT_VIDEOS = [
     {
       id: 'bMknfKXIFA8',
@@ -68,7 +69,7 @@ export const Learning = () => {
 
   // Search YouTube Video Tutorials via YouTube Data API & Generate LLM Short Notes
   const handleSearchTutorials = async (targetTopic = topicInput) => {
-    const query = targetTopic.trim();
+    const query = (targetTopic || '').trim();
     if (!query) {
       showError('Please enter a tutorial topic to search.');
       return;
@@ -102,10 +103,6 @@ export const Learning = () => {
       setIsSearching(false);
     }
   };
-
-  useEffect(() => {
-    handleSearchTutorials(topicInput);
-  }, []);
 
   return (
     <PageContainer title="Learning Hub Agent | TaskPilot OS">
@@ -193,6 +190,21 @@ export const Learning = () => {
           {/* LEFT 7 COLUMNS: YOUTUBE EMBED PLAYER & VIDEO LIST */}
           <div className="lg:col-span-7 space-y-6 w-full">
             
+            {/* Initial Welcome Empty State (Before any search) */}
+            {videoList.length === 0 && !isSearching && (
+              <div className="bg-white border border-slate-200/90 rounded-3xl p-12 text-center shadow-sm space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center mx-auto shadow-inner">
+                  <Youtube className="w-8 h-8 text-indigo-600" />
+                </div>
+                <div className="space-y-1 max-w-md mx-auto">
+                  <h3 className="text-base font-extrabold text-slate-900">Search Any Tutorial Topic</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Type a topic above or select one of the sample tutorial chips to fetch curated YouTube video courses and AI-generated study notes.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Active Embedded YouTube Player Viewport */}
             {activeVideo && (
               <motion.div 
@@ -243,59 +255,61 @@ export const Learning = () => {
             )}
 
             {/* YouTube Videos Results Grid */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-soft space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                  <Tv className="w-4 h-4 text-indigo-600" />
-                  <span>YouTube Tutorial Videos ({videoList.length})</span>
-                </h3>
-                <span className="text-[10px] text-slate-400 font-mono">Topic: "{activeTopic}"</span>
-              </div>
+            {videoList.length > 0 && (
+              <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-soft space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                    <Tv className="w-4 h-4 text-indigo-600" />
+                    <span>YouTube Tutorial Videos ({videoList.length})</span>
+                  </h3>
+                  <span className="text-[10px] text-slate-400 font-mono">Topic: "{activeTopic}"</span>
+                </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {videoList.map((vid) => {
-                  const isActive = activeVideo?.id === vid.id;
-                  return (
-                    <motion.div
-                      key={vid.id}
-                      whileHover={{ y: -2 }}
-                      onClick={() => setActiveVideo(vid)}
-                      className={`group rounded-2xl p-3 border transition-all cursor-pointer space-y-2 ${
-                        isActive 
-                          ? 'bg-indigo-50/70 border-indigo-400 shadow-sm' 
-                          : 'bg-slate-50/70 hover:bg-slate-100 border-slate-200'
-                      }`}
-                    >
-                      <div className="relative rounded-xl overflow-hidden aspect-video bg-slate-900">
-                        <img 
-                          src={vid.thumbnail} 
-                          alt={vid.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-slate-950/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg">
-                            <Play className="w-5 h-5 ml-0.5" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {videoList.map((vid) => {
+                    const isActive = activeVideo?.id === vid.id;
+                    return (
+                      <motion.div
+                        key={vid.id}
+                        whileHover={{ y: -2 }}
+                        onClick={() => setActiveVideo(vid)}
+                        className={`group rounded-2xl p-3 border transition-all cursor-pointer space-y-2 ${
+                          isActive 
+                            ? 'bg-indigo-50/70 border-indigo-400 shadow-sm' 
+                            : 'bg-slate-50/70 hover:bg-slate-100 border-slate-200'
+                        }`}
+                      >
+                        <div className="relative rounded-xl overflow-hidden aspect-video bg-slate-900">
+                          <img 
+                            src={vid.thumbnail} 
+                            alt={vid.title} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          <div className="absolute inset-0 bg-slate-950/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg">
+                              <Play className="w-5 h-5 ml-0.5" />
+                            </div>
+                          </div>
+                          <span className="absolute bottom-2 right-2 bg-slate-950/80 text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
+                            {vid.duration}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-xs font-black text-slate-900 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
+                            {vid.title}
+                          </h4>
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1 font-mono">
+                            <span>{vid.channel}</span>
+                            <span className="text-amber-600 font-bold">{vid.rating}</span>
                           </div>
                         </div>
-                        <span className="absolute bottom-2 right-2 bg-slate-950/80 text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
-                          {vid.duration}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h4 className="text-xs font-black text-slate-900 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
-                          {vid.title}
-                        </h4>
-                        <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1 font-mono">
-                          <span>{vid.channel}</span>
-                          <span className="text-amber-600 font-bold">{vid.rating}</span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                      </motion.div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
 
@@ -313,21 +327,28 @@ export const Learning = () => {
                     LLM Topic Short Notes ({llmProviderName})
                   </h3>
                 </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(aiNotesText);
-                    showSuccess('LLM Short Notes copied to clipboard!');
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-bold text-indigo-200 transition-all cursor-pointer"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy Notes</span>
-                </button>
+                {aiNotesText && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(aiNotesText);
+                      showSuccess('LLM Short Notes copied to clipboard!');
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-bold text-indigo-200 transition-all cursor-pointer"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy Notes</span>
+                  </button>
+                )}
               </div>
 
               {/* Notes Text Body */}
               <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 font-sans text-xs text-indigo-100/90 leading-relaxed whitespace-pre-wrap max-h-[600px] overflow-y-auto">
-                {aiNotesText || `# 📚 Short Study Notes: ${activeTopic}\n\n## 📌 Core Concepts & Overview\nKey theoretical foundations and principles of **${activeTopic}**.\n\n## 🚀 Key Topics Covered\n1. Setup & Environment Configuration\n2. Fundamentals & Core Components\n3. Advanced Patterns & Optimization\n\n## ⚡ Quick Revision Summary\nReview code examples and build hands-on practice exercises while watching.`}
+                {aiNotesText || (
+                  <div className="py-8 text-center text-slate-500 text-xs font-medium space-y-2">
+                    <Sparkles className="w-6 h-6 text-indigo-400 mx-auto opacity-50" />
+                    <p>AI Study Notes will be generated here once a tutorial topic is searched.</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>

@@ -8,20 +8,18 @@ export class ResponseMerger {
    */
   static merge(responses) {
     if (!responses || responses.length === 0) {
-      return '### 🚀 TaskPilot Agent Output\n\nNo specialized sub-agent outputs compiled.';
+      return 'The AI service is currently unavailable. Please try again in a moment.';
     }
 
-    const mergedBlocks = [];
+    const validContents = responses
+      .map(r => typeof r === 'string' ? r : r.content)
+      .filter(c => Boolean(c && String(c).trim()));
 
-    // Header block
-    mergedBlocks.push('### 🛸 Coordinator Executive Summary\n\nAll requested sub-agents successfully completed execution logs.');
+    if (validContents.length === 0) {
+      return 'The AI service returned no output. Please try rephrasing your request.';
+    }
 
-    responses.forEach((resp) => {
-      const agentHeader = this.getAgentMarkdownHeader(resp.agentName);
-      mergedBlocks.push(`${agentHeader}\n\n${resp.content}`);
-    });
-
-    return mergedBlocks.join('\n\n---\n\n');
+    return validContents.join('\n\n---\n\n');
   }
 
   /**

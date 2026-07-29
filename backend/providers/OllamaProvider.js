@@ -1,89 +1,136 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { BaseProvider } from './BaseProvider.js';
 import { PromptBuilder } from './PromptBuilder.js';
 
+// Ensure dotenv is loaded before provider initialization
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '../../.env'), override: true });
+dotenv.config({ path: path.join(__dirname, '../.env'), override: true });
+
 export class OllamaProvider extends BaseProvider {
   constructor(config = {}) {
+    const baseUrl = (config.baseUrl || process.env.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/+$/, '');
+    const model = config.model || process.env.OLLAMA_MODEL || 'qwen3:8b';
+
     super({ 
       name: 'Ollama', 
-      model: config.model || process.env.OLLAMA_MODEL || 'qwen3:8b', 
-      baseUrl: config.baseUrl || process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+      model, 
+      baseUrl,
       ...config 
     });
+
+    this.baseUrl = baseUrl;
+    this.model = model;
+
+    console.log("OLLAMA_BASE_URL =", process.env.OLLAMA_BASE_URL || this.baseUrl);
+    console.log("OLLAMA_MODEL =", process.env.OLLAMA_MODEL || this.model);
+  }
+
+  _formatAxiosError(err) {
+    if (!err) return 'Unknown error';
+    const status = err.response?.status;
+    const statusText = err.response?.statusText || '';
+    const bodyData = err.response?.data ? (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : String(err.response.data)) : '';
+    const code = err.code || '';
+    const message = err.message || String(err);
+
+    let parts = [];
+    if (status) parts.push(`HTTP Status: ${status} ${statusText}`.trim());
+    if (code) parts.push(`Error Code: ${code}`);
+    if (message) parts.push(`Message: ${message}`);
+    if (bodyData) parts.push(`Response Body: ${bodyData}`);
+
+    return parts.join(' | ') || String(err);
   }
 
   async isHealthy() {
     try {
-      await axios.get(`${this.baseUrl}/api/tags`, { timeout: 3000 });
+      const tagsUrl = `${this.baseUrl}/api/tags`;
+      await axios.get(tagsUrl, { timeout: 10000 });
       return true;
-    } catch {
+    } catch (err) {
+      console.warn(`[OllamaProvider Health Check Failed] ${this.baseUrl}/api/tags: ${this._formatAxiosError(err)}`);
       return false;
     }
   }
 
-  async getAvailableModel() {
-    try {
-      const res = await axios.get(`${this.baseUrl}/api/tags`, { timeout: 3000 });
-      const models = res.data?.models || [];
-      if (models.length > 0) {
-        const found = models.find(m => m.name === this.model || m.model === this.model);
-        if (found) return found.name || found.model;
-        return models[0].name || models[0].model;
-      }
-    } catch (e) {
-      console.warn('[OllamaProvider] Failed to fetch tags:', e.message);
-    }
-    return this.model || 'qwen3:8b';
-  }
+  /**
+   * Execute call to Ollama endpoint (/api/chat or /api/generate)
+   */
+  async _callOllama(promptText, isChat = false, messages = null) {
+    const startTime = Date.now();
+    const endpoint = isChat ? `${this.baseUrl}/api/chat` : `${this.baseUrl}/api/generate`;
+    const modelName = process.env.OLLAMA_MODEL || this.model || 'qwen3:8b';
 
-  async _callOllama(promptText) {
-    let targetModel = this.model;
-    try {
-      const response = await axios.post(
-        `${this.baseUrl}/api/generate`,
-        {
-          model: targetModel,
+    const requestBody = isChat
+      ? {
+          model: modelName,
+          messages: messages || [{ role: 'user', content: promptText }],
+          stream: false
+        }
+      : {
+          model: modelName,
           prompt: promptText,
-          stream: false,
-          options: {
-            num_predict: 750
-          }
-        },
-        { timeout: 120000 }
-      );
+          stream: false
+        };
 
-      const text = response.data?.response;
+    console.log(`====================================================`);
+    console.log(`Ollama Base URL:\n${this.baseUrl}`);
+    console.log(`Endpoint:\n${endpoint}`);
+    console.log(`Model:\n${modelName}`);
+    console.log(`Request Body:\n${JSON.stringify(requestBody, null, 2)}`);
+    console.log(`====================================================`);
+
+    // Logger to report elapsed time if generation exceeds 60 seconds
+    const intervalTimer = setInterval(() => {
+      const elapsedSec = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`[Ollama Progress] Local generation in progress... elapsed time: ${elapsedSec} seconds`);
+    }, 60000);
+
+    try {
+      const response = await axios.post(endpoint, requestBody, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 180000 // 180,000 ms (3 minutes HTTP timeout)
+      });
+
+      clearInterval(intervalTimer);
+      const requestDurationMs = Date.now() - startTime;
+
+      const loadDurationNs = response.data?.load_duration;
+      const evalDurationNs = response.data?.eval_duration;
+
+      console.log(`\n====================================================`);
+      console.log(`[Ollama Telemetry] Total Request Duration: ${requestDurationMs} ms (${(requestDurationMs / 1000).toFixed(1)}s)`);
+      if (loadDurationNs) console.log(`[Ollama Telemetry] Model Load Duration: ${(loadDurationNs / 1e6).toFixed(0)} ms`);
+      if (evalDurationNs) console.log(`[Ollama Telemetry] Generation Duration: ${(evalDurationNs / 1e6).toFixed(0)} ms`);
+      console.log(`====================================================\n`);
+
+      const text = isChat 
+        ? response.data?.message?.content 
+        : response.data?.response;
+
       if (!text) {
-        throw new Error('Ollama returned empty response string');
+        throw new Error(`Ollama returned empty response content from endpoint [${endpoint}]`);
       }
+
       return this._cleanThinking(text);
     } catch (err) {
-      const isNotFound = err.response?.status === 404 || 
-                         err.message?.includes('not found') || 
-                         err.response?.data?.error?.includes('not found');
+      clearInterval(intervalTimer);
+      const requestDurationMs = Date.now() - startTime;
 
-      if (isNotFound) {
-        const fallbackModel = await this.getAvailableModel();
-        if (fallbackModel && fallbackModel !== targetModel) {
-          console.log(`[OllamaProvider] Target model '${targetModel}' not available. Auto-switching to '${fallbackModel}'...`);
-          this.model = fallbackModel;
-          const retryRes = await axios.post(
-            `${this.baseUrl}/api/generate`,
-            {
-              model: fallbackModel,
-              prompt: promptText,
-              stream: false,
-              options: {
-                num_predict: 750
-              }
-            },
-            { timeout: 120000 }
-          );
-          const text = retryRes.data?.response;
-          if (text) return this._cleanThinking(text);
-        }
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        const timeoutMsg = `Ollama request timed out after ${requestDurationMs} ms (${(requestDurationMs / 1000).toFixed(1)}s) at endpoint [${endpoint}].`;
+        console.error(`[Ollama Timeout Error]`, timeoutMsg);
+        throw new Error(timeoutMsg);
+      } else {
+        const detailedError = `Ollama Request Failed at ${endpoint}: ${this._formatAxiosError(err)}`;
+        console.error(`[Ollama Connection Error]`, detailedError);
+        throw new Error(detailedError);
       }
-      throw err;
     }
   }
 
@@ -112,79 +159,82 @@ export class OllamaProvider extends BaseProvider {
   }
 
   async chat(messages, options = {}) {
+    if (Array.isArray(messages) && messages.length > 0) {
+      return await this._callOllama('', true, messages);
+    }
     const promptText = PromptBuilder.chatPrompt(messages);
-    return await this._callOllama(promptText);
+    return await this._callOllama(promptText, false);
   }
 
   async generateText(prompt, options = {}) {
-    return await this._callOllama(prompt);
+    return await this._callOllama(prompt, false);
   }
 
   async summarize(text, options = {}) {
     const promptText = PromptBuilder.summaryPrompt(text);
-    return await this._callOllama(promptText);
+    return await this._callOllama(promptText, false);
   }
 
   async generateNotes(topic, options = {}) {
     const promptText = PromptBuilder.notesPrompt(topic);
-    return await this._callOllama(promptText);
+    return await this._callOllama(promptText, false);
   }
 
   async generateQuiz(topic, options = {}) {
     const promptText = PromptBuilder.quizPrompt(topic);
-    const raw = await this._callOllama(promptText);
+    const raw = await this._callOllama(promptText, false);
     return this._parseJSON(raw);
   }
 
   async generateFlashcards(topic, options = {}) {
     const promptText = PromptBuilder.flashcardsPrompt(topic);
-    const raw = await this._callOllama(promptText);
+    const raw = await this._callOllama(promptText, false);
     return this._parseJSON(raw);
   }
 
   async generateStudyPlan(topic, options = {}) {
     const promptText = PromptBuilder.studyPlanPrompt(topic);
-    const raw = await this._callOllama(promptText);
+    const raw = await this._callOllama(promptText, false);
     return this._parseJSON(raw);
   }
 
   async generateRoadmap(goal, options = {}) {
     const promptText = PromptBuilder.roadmapPrompt(goal);
-    const raw = await this._callOllama(promptText);
+    const raw = await this._callOllama(promptText, false);
     return this._parseJSON(raw);
   }
 
   async generateTasks(goal, options = {}) {
     const promptText = PromptBuilder.tasksPrompt(goal);
-    const raw = await this._callOllama(promptText);
+    const raw = await this._callOllama(promptText, false);
     return this._parseJSON(raw);
   }
 
   async explainTopic(topic, options = {}) {
     const promptText = PromptBuilder.explainPrompt(topic);
-    return await this._callOllama(promptText);
+    return await this._callOllama(promptText, false);
   }
 
   async generateInterviewQuestions(topic, options = {}) {
     const promptText = PromptBuilder.interviewPrompt(topic);
-    const raw = await this._callOllama(promptText);
+    const raw = await this._callOllama(promptText, false);
     return this._parseJSON(raw);
   }
 
   async generateMermaidDiagram(topic, options = {}) {
     const promptText = PromptBuilder.diagramPrompt(topic);
-    const raw = await this._callOllama(promptText);
+    const raw = await this._callOllama(promptText, false);
     return this._cleanMermaid(raw);
   }
 
   async generateMindMapJSON(topic, options = {}) {
     const promptText = PromptBuilder.mindmapPrompt(topic);
-    const raw = await this._callOllama(promptText);
+    const raw = await this._callOllama(promptText, false);
     return this._parseJSON(raw);
   }
 
   async generateImage(prompt, options = {}) {
-    return { error: 'Image generation is not yet supported by the configured provider.' };
+    return { error: 'Image generation is not supported by Ollama.' };
   }
 }
 

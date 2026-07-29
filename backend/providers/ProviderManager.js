@@ -55,11 +55,21 @@ export class ProviderManager {
 
       case 'ollama':
         try {
-          const ollamaUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
-          await axios.get(`${ollamaUrl}/api/tags`, { timeout: 1200 });
+          const ollamaUrl = (process.env.OLLAMA_BASE_URL || 'http://localhost:11434').replace(/\/+$/, '');
+          await axios.get(`${ollamaUrl}/api/tags`, { timeout: 10000 });
           return { healthy: true };
         } catch (err) {
-          return { healthy: false, reason: `Ollama endpoint unreachable (${err.message})` };
+          const status = err.response?.status;
+          const statusText = err.response?.statusText || '';
+          const bodyData = err.response?.data ? (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : String(err.response.data)) : '';
+          const detail = [
+            status ? `HTTP ${status} ${statusText}` : null,
+            err.code ? `Code: ${err.code}` : null,
+            err.message ? `Message: ${err.message}` : null,
+            bodyData ? `Body: ${bodyData}` : null
+          ].filter(Boolean).join(' | ');
+
+          return { healthy: false, reason: `Ollama endpoint unreachable at ${process.env.OLLAMA_BASE_URL || 'http://localhost:11434'}/api/tags (${detail || 'Connection refused or timeout'})` };
         }
 
       case 'openrouter':
@@ -159,8 +169,8 @@ export class ProviderManager {
       // 1. Health Pre-Check
       const health = await this.checkProviderHealth(pName);
       if (!health.healthy) {
-        console.log(`Result: Failed`);
-        console.log(`Reason: ${health.reason}`);
+        console.log(`Status: Failed`);
+        console.log(`Failure Reason: ${health.reason}`);
         if (nextProviderName) {
           console.log(`Switching to ${nextProviderName}...`);
         }
@@ -171,32 +181,48 @@ export class ProviderManager {
       const provider = ProviderRegistry.getProviderInstance(pName, options);
 
       if (typeof provider[methodName] !== 'function') {
-        console.log(`Result: Failed`);
-        console.log(`Reason: Method ${methodName} not supported by ${pName}`);
+        console.log(`Status: Failed`);
+        console.log(`Failure Reason: Method ${methodName} not supported by ${pName}`);
         if (nextProviderName) console.log(`Switching to ${nextProviderName}...`);
         console.log(`====================================================\n`);
         continue;
       }
 
+      const timeoutMs = options.timeout || 20000; // 20-second provider timeout
+      console.log(`Timeout: ${timeoutMs / 1000}s`);
+      console.log(`Model: ${provider.model || 'default'}`);
+
       // 2. Execution Loop with Exponential Retry for Transient Failures
-      const maxRetries = 2;
+      const maxRetries = 1;
       let attemptSuccess = false;
       let rawResult = null;
+      const providerStartTime = Date.now();
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
           if (attempt > 0) {
-            const backoffMs = Math.pow(2, attempt) * 300;
-            console.log(`[Retry Attempt ${attempt}/${maxRetries}] Retrying ${pName} in ${backoffMs}ms...`);
+            const backoffMs = Math.pow(2, attempt) * 500;
+            console.log(`[Retry Attempt ${attempt}/${maxRetries}] Retrying ${pName.toUpperCase()} in ${backoffMs}ms...`);
             await new Promise(r => setTimeout(r, backoffMs));
           }
 
-          rawResult = await provider[methodName](prompt, options);
-          attemptSuccess = true;
+          let timerId;
+          const providerCall = provider[methodName](prompt, options);
+          const providerTimeout = new Promise((_, reject) => {
+            timerId = setTimeout(() => reject(new Error(`${pName.toUpperCase()} request timed out (${timeoutMs / 1000}s limit)`)), timeoutMs);
+          });
+
+          try {
+            rawResult = await Promise.race([providerCall, providerTimeout]);
+            attemptSuccess = true;
+          } finally {
+            clearTimeout(timerId);
+          }
+
           break;
         } catch (err) {
           lastError = err;
-          console.warn(`[${pName} Attempt ${attempt + 1}] Error: ${err.message}`);
+          console.warn(`[${pName.toUpperCase()} Attempt ${attempt + 1}] Failure: ${err.message}`);
 
           if (!this.isRetryableError(err) || attempt === maxRetries) {
             break; // Skip further retries for non-transient or maxed-out retries
@@ -205,10 +231,12 @@ export class ProviderManager {
       }
 
       // 3. Evaluate Provider Result
-      if (attemptSuccess && rawResult !== null) {
-        const executionSec = ((Date.now() - startTime) / 1000).toFixed(1);
-        console.log(`Result: Success`);
-        console.log(`Execution Time: ${executionSec} seconds`);
+      const executionSec = ((Date.now() - providerStartTime) / 1000).toFixed(1);
+
+      if (attemptSuccess && rawResult !== null && rawResult !== undefined && rawResult !== '') {
+        console.log(`Execution Time: ${executionSec}s`);
+        console.log(`Status: Success`);
+        console.log(`Returned to Coordinator`);
         console.log(`====================================================\n`);
 
         this.metrics.successfulRequests++;
@@ -228,8 +256,9 @@ export class ProviderManager {
         formatted.rawResult = rawResult;
         return formatted;
       } else {
-        console.log(`Result: Failed`);
-        console.log(`Reason: ${lastError?.message || 'Execution returned null response'}`);
+        console.log(`Execution Time: ${executionSec}s`);
+        console.log(`Status: Failed`);
+        console.log(`Failure Reason: ${lastError?.message || 'Execution returned empty response'}`);
         if (nextProviderName) console.log(`Switching to ${nextProviderName}...`);
         console.log(`====================================================\n`);
       }

@@ -1,5 +1,6 @@
 import emailAgent from '../agents/email/EmailAgent.js';
 import gmailClient from '../providers/email/GmailClient.js';
+import smtpEmailProvider from '../providers/email/SmtpEmailProvider.js';
 import ApiError from '../utils/ApiError.js';
 
 export class EmailService {
@@ -55,20 +56,39 @@ export class EmailService {
   }
 
   /**
-   * Sends email using Gmail API.
+   * Sends email using existing EmailService engine (Gmail API / OAuth).
    * @param {{ to: string, subject: string, body: string, attachments?: Array }} options 
    * @param {string} [userId] 
    */
   async sendEmail(options, userId = null) {
+    const { to, subject, body } = options || {};
+
+    if (!to || !to.includes('@')) {
+      throw ApiError.badRequest('Valid recipient email address ("to") is required.');
+    }
+    if (!subject || !subject.trim()) {
+      throw ApiError.badRequest('Email subject is required.');
+    }
+    if (!body || !body.trim()) {
+      throw ApiError.badRequest('Email body content is required.');
+    }
+
     try {
+      // Execute email delivery via Gmail API Engine (used by AI Email Agent)
       return await gmailClient.sendEmail(options, userId);
     } catch (error) {
-      console.error('[EmailService] Error sending email via Gmail API:', error);
-      throw ApiError.badRequest(`Gmail API transmission failed: ${error.message}`);
+      console.error('[EmailService] Error sending email:', error.stack || error.message);
+      throw ApiError.badRequest(`Email delivery failed: ${error.message}`);
     }
   }
-}
 
+  /**
+   * Alias for sendEmail to support sendMail call signatures.
+   */
+  async sendMail(options, userId = null) {
+    return await this.sendEmail(options, userId);
+  }
+}
 
 export const emailService = new EmailService();
 export default emailService;

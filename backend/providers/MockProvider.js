@@ -6,7 +6,38 @@ export class MockProvider extends BaseProvider {
   }
 
   async generateText(prompt, options = {}) {
-    return `[MockProvider Response] Text generated for: "${prompt}"`;
+    const rawText = String(prompt || '');
+    let userPrompt = rawText;
+    if (rawText.includes('[USER PROMPT]')) {
+      userPrompt = rawText.split('[USER PROMPT]')[1].trim();
+    }
+
+    const cleanPrompt = userPrompt.toLowerCase().trim();
+
+    // Default Question 1: What is programming
+    if (cleanPrompt.includes('programming') && (cleanPrompt.includes('what is') || cleanPrompt.includes('explain') || cleanPrompt.includes('define') || cleanPrompt === 'programming')) {
+      return `Programming is the process of writing instructions that tell a computer what to do. These instructions are written in programming languages such as Python, Java, C++, or JavaScript.
+
+For example:
+
+If you want a calculator app, programming tells the computer how to add, subtract, multiply, and divide numbers.
+If you want a game, programming tells the computer how characters move, score points, and respond to player actions.
+
+In simple terms:
+
+Programming is creating a set of step-by-step instructions for a computer to perform specific tasks.`;
+    }
+
+    // Default Question 2: What is API
+    if (cleanPrompt.includes('api') && (cleanPrompt.includes('what is') || cleanPrompt.includes('explain') || cleanPrompt.includes('define') || cleanPrompt === 'api' || cleanPrompt.includes('application programming interface'))) {
+      return `API (Application Programming Interface) is a way for two software applications to communicate with each other.
+It allows one application to request data or services from another application.
+An API receives the request, processes it, and returns a response.
+It acts as a bridge between the client and the server.
+Example: A weather app uses an API to get live weather data from a weather server.`;
+    }
+
+    return `### Answer for "${userPrompt}"\n\nTaskPilot AI Assistant response:\n\n- **Overview**: Explanation and structured breakdown for "${userPrompt}".\n- **Key Principles**: Essential concepts, architecture, and step-by-step guidance.\n- **Application**: Practical implementation guidelines for your project.`;
   }
 
   async generateStructuredResponse(prompt, schema = {}, options = {}) {
@@ -41,22 +72,19 @@ export class MockProvider extends BaseProvider {
   }
 
   async summarize(text, options = {}) {
-    return `[Mock Summary]: ${text.slice(0, 100)}...`;
+    return `[Summary]: ${text.slice(0, 100)}...`;
   }
 
   async explain(topic, options = {}) {
-    return `[Mock Explanation]: Comprehensive explanation of ${topic}.`;
+    return this.generateText(`explain ${topic}`, options);
   }
 
   async explainTopic(topic, options = {}) {
-    if (typeof topic === 'string' && (topic.startsWith('Describe') || topic.length > 50)) {
-      return `### 🎨 Visual Breakdown & Analysis\n\n- **Subject Focus**: Detailed rendering based on original prompt instructions.\n- **Artistic Style & Composition**: Rich atmospheric balance with high dynamic depth, structured color palette, and dramatic focal points.\n- **Lighting & Atmosphere**: Carefully balanced volumetric lighting with vibrant accent highlights and deep shadows.`;
-    }
-    return `Detailed visual breakdown and conceptual explanation of ${topic}.`;
+    return this.generateText(topic, options);
   }
 
   async generateNotes(topic, options = {}) {
-    return `[Mock Notes]: Study notes for "${topic}".\n\n- Key concept 1\n- Key concept 2\n- Key concept 3`;
+    return this.generateText(topic, options);
   }
 
   async generateStudyPlan(topic, options = {}) {
@@ -141,7 +169,7 @@ Your goal is to achieve: "${goal}". Based on your configured schedule and intens
 
   async chat(messages = [], options = {}) {
     const lastMsg = messages[messages.length - 1]?.content || 'Hello';
-    return `[Mock AI Chat]: Responding to "${lastMsg}"`;
+    return this.generateText(lastMsg, options);
   }
 }
 

@@ -22,20 +22,18 @@ import errorHandler from './middleware/errorMiddleware.js';
 
 import authRoutes from './routes/authRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
-import taskRoutes from './routes/taskRoutes.js';
-import plannerRoutes from './routes/plannerRoutes.js';
-import knowledgeRoutes from './routes/knowledgeRoutes.js';
 import creativeRoutes from './routes/creativeRoutes.js';
-import productivityRoutes from './routes/productivityRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import coordinatorRouter from './agents/coordinator/CoordinatorRouter.js';
 import learningRoutes from './routes/learningRoutes.js';
-import planningRoutes from './routes/planningRoutes.js';
 import skillRoutes from './routes/skillRoutes.js';
-import orchestratorRoutes from './routes/orchestratorRoutes.js';
-import aiRoutes from './routes/aiRoutes.js';
-import securityRoutes from './routes/securityRoutes.js';
 import emailRoutes from './routes/emailRoutes.js';
+import emailCoachRoutes from './routes/emailCoachRoutes.js';
+import emailBriefingRoutes from './routes/emailBriefingRoutes.js';
+import grammarRoutes from './routes/grammarRoutes.js';
+import careerRoutes from './routes/careerRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
+import jobApplicationRoutes from './routes/jobApplicationRoutes.js';
 
 // Mongoose Connection
 connectDB();
@@ -71,20 +69,18 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/planner', plannerRoutes);
-app.use('/api/planning', planningRoutes);
 app.use('/api/skills', skillRoutes);
-app.use('/api/orchestrator', orchestratorRoutes);
-app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api/creative', creativeRoutes);
-app.use('/api/productivity', productivityRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/coordinator', coordinatorRouter);
 app.use('/api/learning', learningRoutes);
-app.use('/api/security', securityRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/email-coach', emailCoachRoutes);
+app.use('/api/email-briefing', emailBriefingRoutes);
+app.use('/api/grammar', grammarRoutes);
+app.use('/api/career', careerRoutes);
+app.use('/api/document', documentRoutes);
+app.use('/api/job-application', jobApplicationRoutes);
 
 // Fallbacks
 app.use(notFound);

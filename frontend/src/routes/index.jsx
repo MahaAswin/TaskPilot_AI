@@ -15,25 +15,18 @@ import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 import Dashboard from '../pages/dashboard/Dashboard';
 import Workspace from '../pages/workspace/Workspace';
-import Planner from '../pages/planner/Planner';
-import Tasks from '../pages/tasks/Tasks';
-import Knowledge from '../pages/knowledge/Knowledge';
 import Learning from '../pages/learning/Learning';
 import Creative from '../pages/creative/Creative';
-import Analytics from '../pages/analytics/Analytics';
 import Profile from '../pages/profile/Profile';
 import Settings from '../pages/settings/Settings';
 
-import PlanningCanvasPage from '../pages/planner/PlanningCanvasPage';
 import SkillCenter from '../pages/skills/SkillCenter';
-import ProductivityCenter from '../pages/productivity/ProductivityCenter';
-import OrchestratorCenter from '../pages/orchestrator/OrchestratorCenter';
-import AIProviderCenter from '../pages/ai/AIProviderCenter';
-import SecurityAI from '../pages/security/SecurityAI';
-import ScannerAgent from '../pages/security/ScannerAgent';
-import SpamAgent from '../pages/security/SpamAgent';
-import PhoneAgent from '../pages/security/PhoneAgent';
 import EmailAgent from '../pages/email/EmailAgent';
+import EmailCoach from '../pages/email/EmailCoach';
+import EmailBriefing from '../pages/email/EmailBriefing';
+import CareerIntelligence from '../pages/career/CareerIntelligence';
+import DocumentGenerator from '../pages/document/DocumentGenerator';
+import JobApplication from '../pages/jobApplication/JobApplication';
 import NotFound from '../pages/error/NotFound';
 
 export const AppRoutes = () => {
@@ -55,27 +48,18 @@ export const AppRoutes = () => {
       {/* 3. Protected Dashboard Pages */}
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/planner" element={<Planner />} />
-        <Route path="/planning-canvas" element={<PlanningCanvasPage />} />
-        <Route path="/tasks" element={<Tasks />} />
         <Route path="/skills" element={<SkillCenter />} />
-        <Route path="/productivity" element={<ProductivityCenter />} />
-        <Route path="/orchestrator" element={<OrchestratorCenter />} />
+        <Route path="/career-intelligence" element={<CareerIntelligence />} />
+        <Route path="/document-generator" element={<DocumentGenerator />} />
+        <Route path="/job-application" element={<JobApplication />} />
+        <Route path="/email-briefing" element={<EmailBriefing />} />
+        <Route path="/email-coach" element={<EmailCoach />} />
         <Route path="/email-agent" element={<EmailAgent />} />
-        <Route path="/ai-providers" element={<AIProviderCenter />} />
-        <Route path="/security-ai" element={<ScannerAgent />} />
-        <Route path="/scanner-agent" element={<ScannerAgent />} />
-        <Route path="/spam-agent" element={<SpamAgent />} />
-        <Route path="/email-security-agent" element={<SpamAgent />} />
-        <Route path="/phone-agent" element={<PhoneAgent />} />
-        <Route path="/phone-intelligence-agent" element={<PhoneAgent />} />
 
 
 
-        <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/learning" element={<Learning />} />
         <Route path="/creative" element={<Creative />} />
-        <Route path="/analytics" element={<Analytics />} />
 
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
@@ -85,7 +69,6 @@ export const AppRoutes = () => {
       {/* 4. Protected Full-Bleed Workspace Canvas */}
       <Route element={<WorkspaceLayout />}>
         <Route path="/workspace" element={<Workspace />} />
-        <Route path="/planning-canvas-full" element={<PlanningCanvasPage />} />
       </Route>
 
       {/* Error Fallback Pages */}

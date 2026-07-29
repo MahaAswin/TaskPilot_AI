@@ -4,22 +4,40 @@
  */
 
 export const IntentType = {
-  KNOWLEDGE: 'knowledge',
-  LEARNING: 'learning',
+  GENERAL_QUERY: 'general_query',
+  STUDY_NOTES: 'study_notes',
+  ROADMAP: 'roadmap',
+  QUIZ: 'quiz',
+  EMAIL: 'email',
+  SECURITY: 'security',
+  CALENDAR: 'calendar',
+
+  // Backward compatibility aliases
+  KNOWLEDGE: 'study_notes',
+  LEARNING: 'quiz',
+  PLANNING: 'roadmap',
+  GENERAL_CONVERSATION: 'general_query',
   TASK: 'task',
-  PLANNING: 'planning',
   CREATIVE: 'creative',
   PRODUCTIVITY: 'productivity',
-  SKILL_ANALYSIS: 'skill_analysis',
-  GENERAL_CONVERSATION: 'general_conversation'
+  SKILL_ANALYSIS: 'skill_analysis'
 };
 
 export const AgentType = {
+  GENERAL: 'GeneralAgent',
+  STUDY_NOTES: 'KnowledgeAgent',
+  ROADMAP: 'PlannerAgent',
+  QUIZ: 'LearningAgent',
+  EMAIL: 'EmailAgent',
+  SECURITY: 'SecurityAgent',
+  CALENDAR: 'CalendarAgent',
+
+  // Aliases
   PLANNER: 'PlannerAgent',
   KNOWLEDGE: 'KnowledgeAgent',
-  CREATIVE: 'CreativeAgent',
   LEARNING: 'LearningAgent',
   TASK: 'TaskAgent',
+  CREATIVE: 'CreativeAgent',
   SKILL_ANALYZER: 'SkillAnalyzer',
   PRODUCTIVITY_COACH: 'ProductivityCoach'
 };

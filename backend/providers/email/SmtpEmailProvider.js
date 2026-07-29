@@ -1,12 +1,27 @@
 export class SmtpEmailProvider {
   constructor(config = {}) {
-    this.host = config.host || process.env.SMTP_HOST || 'smtp.gmail.com';
-    this.port = parseInt(config.port || process.env.SMTP_PORT || '587', 10);
-    this.user = config.user || process.env.SMTP_USER || '';
-    this.pass = config.pass || process.env.SMTP_PASS || '';
-    this.from = config.from || process.env.SMTP_FROM || 'TaskPilot AI <noreply@taskpilot.ai>';
-
+    this.configOverride = config;
     this.transporter = null;
+  }
+
+  get host() {
+    return this.configOverride.host || process.env.SMTP_HOST || 'smtp.gmail.com';
+  }
+
+  get port() {
+    return parseInt(this.configOverride.port || process.env.SMTP_PORT || '587', 10);
+  }
+
+  get user() {
+    return this.configOverride.user || process.env.SMTP_USER || '';
+  }
+
+  get pass() {
+    return this.configOverride.pass || process.env.SMTP_PASS || '';
+  }
+
+  get from() {
+    return this.configOverride.from || process.env.SMTP_FROM || 'TaskPilot AI <noreply@taskpilot.ai>';
   }
 
   /**
