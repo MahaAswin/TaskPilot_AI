@@ -297,7 +297,7 @@ export const Workspace = () => {
       </AnimatePresence>
 
       {/* 2. Center Panel: chat + workspace headers */}
-      <div className="flex-1 flex flex-col h-full border-r border-slate-200 overflow-hidden relative">
+      <div className="flex-1 flex flex-col h-full border-r border-white/10 overflow-hidden relative bg-[#14161B]">
         <WorkspaceHeader
           chatTitle={activeChatObj?.title}
           onClearChat={handleClearChat}
@@ -308,7 +308,7 @@ export const Workspace = () => {
         />
 
         {/* Tab selector bar */}
-        <div className="bg-white border-b border-slate-100 px-6 py-2 flex items-center gap-1.5 shrink-0 overflow-x-auto select-none">
+        <div className="bg-[#1B1E25] border-b border-white/5 px-6 py-2 flex items-center gap-1.5 shrink-0 overflow-x-auto select-none">
           {[
             { id: 'chat', label: 'AI Chat', icon: MessageSquare },
             { id: 'notes', label: 'Study Notes', icon: BookOpen },
@@ -324,8 +324,8 @@ export const Workspace = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm'
-                    : 'bg-transparent border-transparent text-slate-400 hover:bg-slate-50 hover:text-slate-700'
+                    ? 'bg-[rgba(232,180,93,0.14)] border-[#E8B45D]/30 text-[#E8B45D] shadow-sm'
+                    : 'bg-transparent border-transparent text-[#868C99] hover:bg-white/5 hover:text-[#ECEAE3]'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -336,7 +336,7 @@ export const Workspace = () => {
         </div>
 
         {/* Center Panel Viewport renderers */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/20">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-[#14161B]">
           
           {/* Chat Tab Viewport */}
           {activeTab === 'chat' && (
@@ -344,11 +344,11 @@ export const Workspace = () => {
               <div className="flex-1 overflow-y-auto space-y-4 px-2 py-4">
                 {messages.length === 0 ? (
                   <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-4 pt-12 select-none">
-                    <div className="p-4 bg-indigo-50 border border-slate-150 rounded-2xl shadow-soft">
-                      <Cpu className="w-8 h-8 text-indigo-600 animate-pulse" />
+                    <div className="p-4 bg-[#242832] border border-white/10 rounded-2xl shadow-2xl">
+                      <Cpu className="w-8 h-8 text-[#E8B45D] animate-pulse" />
                     </div>
-                    <h3 className="text-xs font-black uppercase text-slate-800 tracking-wider">Empty Workspace Session</h3>
-                    <p className="text-[10px] text-slate-400 leading-relaxed font-semibold">
+                    <h3 className="text-xs font-black uppercase text-[#ECEAE3] tracking-wider">Empty Workspace Session</h3>
+                    <p className="text-[10px] text-[#C6C9D1] leading-relaxed font-semibold">
                       Multi-Agent gateway is active. Send a message or click a preset below to instruct the coordinator.
                     </p>
                   </div>
@@ -360,14 +360,14 @@ export const Workspace = () => {
                 
                 {/* Typing Stream Indicator */}
                 {isChatLoading && (
-                  <div className="flex gap-4 w-full max-w-3xl mx-auto py-5 border-b border-slate-100">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200/50 flex items-center justify-center font-bold text-xs shrink-0 animate-pulse">
-                      <Cpu className="w-4 h-4 text-indigo-600" />
+                  <div className="flex gap-4 w-full max-w-3xl mx-auto py-5 border-b border-white/10">
+                    <div className="w-8 h-8 rounded-xl bg-[rgba(232,180,93,0.14)] border border-[#E8B45D]/30 flex items-center justify-center font-bold text-xs shrink-0 animate-pulse">
+                      <Cpu className="w-4 h-4 text-[#E8B45D]" />
                     </div>
                     <div className="flex-1 space-y-2 py-1">
-                      <div className="h-2 bg-slate-150 rounded-full w-1/4 animate-pulse" />
-                      <div className="h-2 bg-slate-100 rounded-full w-3/4 animate-pulse" />
-                      <div className="h-2 bg-slate-100 rounded-full w-2/3 animate-pulse" />
+                      <div className="h-2 bg-[#242832] rounded-full w-1/4 animate-pulse" />
+                      <div className="h-2 bg-[#1B1E25] rounded-full w-3/4 animate-pulse" />
+                      <div className="h-2 bg-[#1B1E25] rounded-full w-2/3 animate-pulse" />
                     </div>
                   </div>
                 )}
@@ -381,10 +381,10 @@ export const Workspace = () => {
                     <button
                       key={idx}
                       onClick={() => handleSendMessage(p.query)}
-                      className="p-3 border border-slate-200 bg-white hover:bg-slate-50 rounded-xl text-left text-[10px] font-semibold text-slate-600 shadow-soft cursor-pointer hover:border-indigo-200 transition-all flex items-center justify-between"
+                      className="p-3 border border-white/10 bg-[#1B1E25] hover:bg-white/5 rounded-xl text-left text-[10px] font-semibold text-[#C6C9D1] shadow-2xl cursor-pointer hover:border-[#E8B45D]/30 transition-all flex items-center justify-between"
                     >
                       <span>{p.label}</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      <ChevronRight className="w-3.5 h-3.5 text-[#868C99]" />
                     </button>
                   ))}
                 </div>
@@ -418,24 +418,24 @@ export const Workspace = () => {
           {/* Tasks Tab Viewport */}
           {activeTab === 'tasks' && (
             <div className="max-w-2xl mx-auto py-4 space-y-4">
-              <div className="flex items-center gap-1.5 text-indigo-600 font-bold text-[10px] uppercase tracking-wide">
+              <div className="flex items-center gap-1.5 text-[#E8B45D] font-bold text-[10px] uppercase tracking-wide">
                 <CheckSquare className="w-4.5 h-4.5" />
                 <span>Generated Study Tasks Board</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-soft space-y-2">
-                  <div className="flex justify-between items-center text-[10px] text-indigo-600 font-bold">
+                <div className="p-4 bg-[#1B1E25] border border-white/10 rounded-xl shadow-2xl space-y-2">
+                  <div className="flex justify-between items-center text-[10px] text-[#E8B45D] font-bold">
                     <span>Task 1: Membrane Passways</span>
-                    <span className="bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">In Progress</span>
+                    <span className="bg-[rgba(232,180,93,0.14)] px-2 py-0.5 rounded border border-[#E8B45D]/30">In Progress</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">Study diffusion and active transport mechanisms.</p>
+                  <p className="text-[10px] text-[#C6C9D1] font-semibold leading-relaxed">Study diffusion and active transport mechanisms.</p>
                 </div>
-                <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-soft space-y-2">
-                  <div className="flex justify-between items-center text-[10px] text-emerald-600 font-bold">
+                <div className="p-4 bg-[#1B1E25] border border-white/10 rounded-xl shadow-2xl space-y-2">
+                  <div className="flex justify-between items-center text-[10px] text-[#57B5A8] font-bold">
                     <span>Task 2: Krebs Cycle Diagram</span>
-                    <span className="bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Completed</span>
+                    <span className="bg-[rgba(87,181,168,0.14)] px-2 py-0.5 rounded border border-[#57B5A8]/30">Completed</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 font-semibold leading-relaxed">Map Krebs enzyme matrices processes.</p>
+                  <p className="text-[10px] text-[#C6C9D1] font-semibold leading-relaxed">Map Krebs enzyme matrices processes.</p>
                 </div>
               </div>
             </div>
@@ -444,13 +444,13 @@ export const Workspace = () => {
           {/* Reports Tab Viewport */}
           {activeTab === 'reports' && (
             <div className="max-w-2xl mx-auto py-4 space-y-4">
-              <div className="flex items-center gap-1.5 text-rose-600 font-bold text-[10px] uppercase tracking-wide">
+              <div className="flex items-center gap-1.5 text-[#E8B45D] font-bold text-[10px] uppercase tracking-wide">
                 <BarChart className="w-4.5 h-4.5 animate-pulse" />
                 <span>Productivity Coach Report Logs</span>
               </div>
-              <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-soft space-y-3">
-                <h5 className="text-xs font-black text-slate-800 uppercase tracking-wider">Performance Audit Log</h5>
-                <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
+              <div className="p-4 bg-[#1B1E25] border border-white/10 rounded-xl shadow-2xl space-y-3">
+                <h5 className="text-xs font-black text-white uppercase tracking-wider">Performance Audit Log</h5>
+                <p className="text-[10px] text-[#C6C9D1] leading-relaxed font-semibold">
                   Multi-Agent compiler successfully tracked query cycles. Overall interaction status has triggered +2 XP to operator dashboard profile ratings.
                 </p>
               </div>
@@ -468,7 +468,7 @@ export const Workspace = () => {
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="hidden lg:block w-70 h-full overflow-y-auto bg-white p-4 space-y-6 shrink-0"
+            className="hidden lg:block w-70 h-full overflow-y-auto bg-[#1B1E25] border-l border-white/10 p-4 space-y-6 shrink-0"
           >
             {/* Agent Timeline */}
             <AgentTimeline 
@@ -476,7 +476,7 @@ export const Workspace = () => {
               isThinking={isTimelineThinking} 
             />
 
-            <hr className="border-slate-100" />
+            <hr className="border-white/10" />
 
             {/* File Upload Zone */}
             <UploadZone onFileSelected={(file) => handleUploadFile(file)} />

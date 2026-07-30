@@ -5,6 +5,7 @@ import {
   FileCode, Layers, File, Edit3, HelpCircle, CheckCircle2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageContainer from '../../components/common/PageContainer';
 import { documentService } from '../../services/documentService';
 
 export const DocumentGenerator = () => {
@@ -140,47 +141,40 @@ export const DocumentGenerator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-8">
-      
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-900/60 via-indigo-900/50 to-slate-900 p-6 sm:p-8 border border-blue-500/20 shadow-2xl backdrop-blur-xl">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="p-2.5 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-inner">
-                <FileText className="w-6 h-6 animate-pulse" />
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                AI Document Generator Agent
-              </h1>
-              <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-sm">
-                PDF & DOCX Engine
-              </span>
-            </div>
-            <p className="text-sm text-slate-300 max-w-2xl">
-              Create professional, downloadable PDF and Microsoft Word (.docx) documents from text or Markdown files with optional Gemini 2.5 Flash content enhancements.
-            </p>
+    <PageContainer>
+      {/* Top Header Banner Card */}
+      <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgba(232,180,93,0.14)] border border-[#E8B45D]/30 text-[#E8B45D] text-xs font-bold">
+            <FileText className="w-3.5 h-3.5" />
+            AI DOCUMENT GENERATOR AGENT
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+            <FileText className="w-7 h-7 text-[#E8B45D]" />
+            <span>AI Document Generator</span>
+          </h1>
+          <p className="text-[#C6C9D1] text-xs sm:text-sm max-w-2xl leading-relaxed font-normal">
+            Create professional, downloadable PDF and Microsoft Word (.docx) documents from text or Markdown files with optional Gemini 2.5 Flash content enhancements.
+          </p>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setActiveTab(activeTab === 'editor' ? 'preview' : 'editor')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition"
-            >
-              <Eye className="w-4 h-4 text-blue-400" />
-              <span>{activeTab === 'editor' ? 'View Live Preview' : 'Edit Document'}</span>
-            </button>
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => setActiveTab(activeTab === 'editor' ? 'preview' : 'editor')}
+            className="btn-secondary px-4 py-2.5 text-xs flex items-center gap-2"
+          >
+            <Eye className="w-4 h-4 text-[#E8B45D]" />
+            <span>{activeTab === 'editor' ? 'View Live Preview' : 'Edit Document'}</span>
+          </button>
 
-            <button
-              onClick={handleGenerateDocuments}
-              disabled={isGenerating}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-600/25 transition hover:scale-[1.02]"
-            >
-              {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4 text-blue-200" />}
-              <span>Generate Document</span>
-            </button>
-          </div>
+          <button
+            onClick={handleGenerateDocuments}
+            disabled={isGenerating}
+            className="btn-primary px-5 py-2.5 text-xs flex items-center gap-2 shadow-md text-[#14161B]"
+          >
+            {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin text-[#14161B]" /> : <Sparkles className="w-4 h-4 text-[#14161B]" />}
+            <span>Generate Document</span>
+          </button>
         </div>
       </div>
 
@@ -190,10 +184,10 @@ export const DocumentGenerator = () => {
         {/* Left 7 Columns: Input & Styling */}
         <div className="lg:col-span-7 space-y-6">
           
-          {/* File Upload Dropzone */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+          {/* File Upload Dropzone - Dark Work Surface */}
+          <div className="dark-work-surface p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="p-2 rounded-xl bg-slate-950 text-blue-400 border border-slate-800">
+              <span className="p-2.5 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
                 <Upload className="w-5 h-5" />
               </span>
               <div>
@@ -202,19 +196,19 @@ export const DocumentGenerator = () => {
               </div>
             </div>
 
-            <label className="px-4 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 text-xs font-bold cursor-pointer transition">
+            <label className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer transition shadow-md">
               Browse .txt / .md File
               <input type="file" accept=".txt,.md" onChange={handleFileUpload} className="hidden" />
             </label>
           </div>
 
-          {/* Text Content Editor Card */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-blue-400" /> Document Content Editor (Markdown Supported)
+          {/* Text Content Editor Card - Dark Work Surface */}
+          <div className="dark-work-surface p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <label className="text-xs font-bold text-white flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-[#5B5FEF]" /> Document Content Editor (Markdown Supported)
               </label>
-              <span className="text-[11px] text-slate-500 font-mono">
+              <span className="text-[11px] text-slate-400 font-mono">
                 {content.length} characters | {content.split(/\s+/).filter(Boolean).length} words
               </span>
             </div>
@@ -224,20 +218,20 @@ export const DocumentGenerator = () => {
               onChange={(e) => setContent(e.target.value)}
               rows={12}
               placeholder="Type or paste your document content here (supports Markdown headings #, lists -, and bold **text**)..."
-              className="w-full p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500 font-mono leading-relaxed resize-none"
+              className="w-full p-4 rounded-2xl bg-[#222937] border border-white/10 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-[#5B5FEF] font-mono leading-relaxed resize-none"
             />
           </div>
 
-          {/* Gemini 2.5 Flash AI Enhancements Panel */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          {/* Gemini 2.5 Flash AI Enhancements Panel - Dark Work Surface */}
+          <div className="dark-work-surface p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 <h3 className="text-xs font-bold text-white uppercase tracking-wider">
                   Optional AI Content Enhancements (Gemini 2.5 Flash)
                 </h3>
               </div>
-              <span className="text-[10px] text-slate-500 font-mono">Only executed on click</span>
+              <span className="text-[10px] text-slate-400 font-mono">Only executed on click</span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
@@ -438,7 +432,7 @@ export const DocumentGenerator = () => {
 
       </div>
 
-    </div>
+    </PageContainer>
   );
 };
 

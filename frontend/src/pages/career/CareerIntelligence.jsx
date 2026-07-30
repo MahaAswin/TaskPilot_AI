@@ -3,9 +3,10 @@ import {
   Briefcase, Sparkles, Upload, FileText, CheckCircle2, AlertTriangle, 
   MapPin, DollarSign, TrendingUp, Award, Layers, Search, Bookmark, 
   ExternalLink, Copy, RefreshCw, ArrowRight, ShieldCheck, UserCheck, 
-  BookOpen, Plus, X, Star, ChevronRight
+  BookOpen, Plus, X, Star, ChevronRight, GraduationCap
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageContainer from '../../components/common/PageContainer';
 import { careerService } from '../../services/careerService';
 
 export const CareerIntelligence = () => {
@@ -159,40 +160,33 @@ ${report.jobs?.slice(0, 5).map(j => `- ${j.title} at ${j.company} (Match: ${j.ma
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-8">
-      
-      {/* Top Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-900/60 via-teal-900/50 to-slate-900 p-6 sm:p-8 border border-emerald-500/20 shadow-2xl backdrop-blur-xl">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-inner">
-                <Briefcase className="w-6 h-6 animate-pulse" />
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                AI Career Intelligence Agent
-              </h1>
-              <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-sm">
-                Adzuna Jobs API
-              </span>
-            </div>
-            <p className="text-sm text-slate-300 max-w-2xl">
-              AI Career Advisor analyzing your resume and skills against live job listings from the Adzuna API to calculate job compatibility, identify skill gaps, and generate your career roadmap.
-            </p>
+    <PageContainer>
+      {/* SaaS Hero Header Card */}
+      <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgba(232,180,93,0.14)] border border-[#E8B45D]/30 text-[#E8B45D] text-xs font-bold">
+            <GraduationCap className="w-3.5 h-3.5" />
+            AI CAREER INTELLIGENCE AGENT
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+            <GraduationCap className="w-7 h-7 text-[#E8B45D]" />
+            <span>AI Career Intelligence</span>
+          </h1>
+          <p className="text-[#C6C9D1] text-xs sm:text-sm max-w-2xl leading-relaxed font-normal">
+            AI Career Advisor analyzing your resume and skills against live job listings from the Adzuna API to calculate job compatibility, identify skill gaps, and generate your career roadmap.
+          </p>
+        </div>
 
-          <div className="flex items-center gap-3">
-            {report && (
-              <button
-                onClick={handleDownloadReport}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 border border-emerald-500/40 text-xs font-semibold transition shadow-lg hover:scale-[1.02]"
-              >
-                <Award className="w-4 h-4 text-emerald-400" />
-                <span>Download Report</span>
-              </button>
-            )}
-          </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {report && (
+            <button
+              onClick={handleDownloadReport}
+              className="btn-primary px-4 py-2.5 text-xs flex items-center gap-2 shadow-sm text-[#14161B]"
+            >
+              <Award className="w-4 h-4 text-[#14161B]" />
+              <span>Download Report</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -201,20 +195,20 @@ ${report.jobs?.slice(0, 5).map(j => `- ${j.title} at ${j.company} (Match: ${j.ma
         
         {/* Left Column: Controls & Input (4 Cols) */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-5">
+          <div className="bg-[#1B1E25] border border-white/10 rounded-2xl p-5 shadow-xl space-y-5">
             
             {/* Input Mode Selector */}
-            <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <div className="flex items-center gap-1 bg-[#242832] p-1 rounded-xl border border-white/10">
               <button
                 onClick={() => setInputMode('text')}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${inputMode === 'text' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${inputMode === 'text' ? 'bg-[#E8B45D] text-[#14161B] shadow' : 'text-[#868C99] hover:text-[#ECEAE3]'}`}
               >
                 <FileText className="w-3.5 h-3.5" />
                 <span>Paste Resume</span>
               </button>
               <button
                 onClick={() => setInputMode('upload')}
-                className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${inputMode === 'upload' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${inputMode === 'upload' ? 'bg-[#E8B45D] text-[#14161B] shadow' : 'text-[#868C99] hover:text-[#ECEAE3]'}`}
               >
                 <Upload className="w-3.5 h-3.5" />
                 <span>Upload PDF/DOCX</span>
@@ -224,19 +218,19 @@ ${report.jobs?.slice(0, 5).map(j => `- ${j.title} at ${j.company} (Match: ${j.ma
             {/* Input Body */}
             {inputMode === 'text' ? (
               <div className="space-y-2">
-                <label className="block text-xs font-medium text-slate-400">Paste Resume / Profile Text</label>
+                <label className="block text-xs font-medium text-[#C6C9D1]">Paste Resume / Profile Text</label>
                 <textarea
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
                   placeholder="Paste complete resume or experience text here..."
                   rows={8}
-                  className="w-full p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500 font-sans leading-relaxed resize-none"
+                  className="w-full p-3.5 rounded-xl bg-[#242832] border border-white/10 text-xs text-[#ECEAE3] placeholder-[#868C99] focus:outline-none focus:border-[#E8B45D] font-sans leading-relaxed resize-none"
                 />
               </div>
             ) : (
-              <div className="border-2 border-dashed border-slate-800 hover:border-emerald-500/60 rounded-2xl p-6 bg-slate-950/60 transition cursor-pointer text-center space-y-2">
-                <Upload className="w-8 h-8 text-emerald-400 mx-auto" />
-                <p className="text-xs font-bold text-slate-200">
+              <div className="border-2 border-dashed border-white/10 hover:border-[#E8B45D]/60 rounded-2xl p-6 bg-[#242832] transition cursor-pointer text-center space-y-2">
+                <Upload className="w-8 h-8 text-[#57B5A8] mx-auto" />
+                <p className="text-xs font-bold text-[#ECEAE3]">
                   {selectedFile ? selectedFile.name : 'Select or drag Resume PDF / DOCX'}
                 </p>
                 <input
@@ -248,7 +242,7 @@ ${report.jobs?.slice(0, 5).map(j => `- ${j.title} at ${j.company} (Match: ${j.ma
                 />
                 <label
                   htmlFor="resume-file-input"
-                  className="inline-block px-3.5 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-xs font-bold cursor-pointer transition"
+                  className="inline-block px-3.5 py-1.5 rounded-xl bg-[rgba(87,181,168,0.14)] hover:bg-[#57B5A8]/30 text-[#57B5A8] text-xs font-bold cursor-pointer transition border border-[#57B5A8]/30"
                 >
                   Browse File
                 </label>
@@ -745,7 +739,7 @@ ${report.jobs?.slice(0, 5).map(j => `- ${j.title} at ${j.company} (Match: ${j.ma
         </div>
       )}
 
-    </div>
+    </PageContainer>
   );
 };
 

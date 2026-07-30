@@ -75,14 +75,14 @@ export const ChatInput = ({ onSendMessage, onUploadFile, isLoading }) => {
       
       {/* Attached file status banner */}
       {attachedFile && (
-        <div className="mb-2 p-2 border border-indigo-100 bg-indigo-50/40 rounded-xl flex items-center justify-between animate-fade-in max-w-sm">
-          <div className="flex items-center gap-2 text-[10px] text-indigo-700 font-bold">
+        <div className="mb-2 p-2 border border-[#E8B45D]/30 bg-[rgba(232,180,93,0.14)] rounded-xl flex items-center justify-between animate-fade-in max-w-sm">
+          <div className="flex items-center gap-2 text-[10px] text-[#E8B45D] font-bold">
             <File className="w-3.5 h-3.5" />
             <span className="truncate max-w-[200px]">{attachedFile.name}</span>
           </div>
           <button 
             onClick={() => setAttachedFile(null)}
-            className="p-0.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer"
+            className="p-0.5 text-[#868C99] hover:text-[#ECEAE3] hover:bg-white/5 rounded-lg cursor-pointer"
           >
             <X className="w-3 h-3" />
           </button>
@@ -96,15 +96,15 @@ export const ChatInput = ({ onSendMessage, onUploadFile, isLoading }) => {
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
         onDrop={handleDrop}
-        className={`relative border rounded-2xl bg-white shadow-soft transition-all duration-300 ${
+        className={`relative border rounded-2xl bg-[#1B1E25] shadow-2xl transition-all duration-300 ${
           dragActive 
-            ? 'border-indigo-400 ring-4 ring-indigo-500/5' 
-            : 'border-slate-200 hover:border-slate-300 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/5'
+            ? 'border-[#E8B45D] ring-4 ring-[#E8B45D]/5' 
+            : 'border-white/10 hover:border-[#E8B45D]/30 focus-within:border-[#E8B45D]/50 focus-within:ring-4 focus-within:ring-[#E8B45D]/5'
         }`}
       >
         {/* Drag Overlay visual shield */}
         {dragActive && (
-          <div className="absolute inset-0 bg-indigo-50/90 rounded-2xl flex items-center justify-center border-2 border-dashed border-indigo-400 z-10 text-xs font-bold text-indigo-600 uppercase tracking-wider gap-2">
+          <div className="absolute inset-0 bg-[rgba(232,180,93,0.9)] rounded-2xl flex items-center justify-center border-2 border-dashed border-[#E8B45D] z-10 text-xs font-bold text-[#14161B] uppercase tracking-wider gap-2">
             <Sparkles className="w-4 h-4 animate-bounce" />
             <span>Drop file here to upload (PDF, Image, Text)</span>
           </div>
@@ -117,7 +117,7 @@ export const ChatInput = ({ onSendMessage, onUploadFile, isLoading }) => {
           onKeyDown={handleKeyDown}
           placeholder={isLoading ? "AI Agent is compiling results..." : "Ask TaskPilot Co-Pilot... (Press Enter to submit)"}
           disabled={isLoading || isUploading}
-          className="w-full pl-4 pr-24 py-3 bg-transparent resize-none text-xs text-slate-800 placeholder-slate-400 focus:outline-none leading-relaxed font-semibold"
+          className="w-full pl-4 pr-24 py-3 bg-transparent resize-none text-xs text-[#ECEAE3] placeholder-[#868C99] focus:outline-none leading-relaxed font-semibold"
         />
 
         {/* Input Tools panel */}
@@ -134,9 +134,9 @@ export const ChatInput = ({ onSendMessage, onUploadFile, isLoading }) => {
             onClick={() => fileInputRef.current.click()}
             disabled={isLoading || isUploading}
             title="Attach File"
-            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-[#868C99] hover:text-[#ECEAE3] hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
-            {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+            {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[#E8B45D]" /> : <Paperclip className="w-3.5 h-3.5" />}
           </button>
 
           <button
@@ -144,7 +144,7 @@ export const ChatInput = ({ onSendMessage, onUploadFile, isLoading }) => {
             disabled={isLoading}
             onClick={() => alert('Voice input is locked in scaffolding.')}
             title="Voice input"
-            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-[#868C99] hover:text-[#ECEAE3] hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             <Mic className="w-3.5 h-3.5" />
           </button>
@@ -153,7 +153,7 @@ export const ChatInput = ({ onSendMessage, onUploadFile, isLoading }) => {
             <button
               type="button"
               title="Stop Generation"
-              className="p-1.5 bg-rose-50 text-rose-500 rounded-lg shrink-0 cursor-pointer"
+              className="p-1.5 bg-[#E2836A]/20 text-[#E2836A] rounded-lg shrink-0 cursor-pointer"
             >
               <StopCircle className="w-4 h-4 animate-pulse" />
             </button>
@@ -161,9 +161,9 @@ export const ChatInput = ({ onSendMessage, onUploadFile, isLoading }) => {
             <button
               type="submit"
               disabled={!text.trim() && !attachedFile}
-              className="p-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white rounded-xl shadow-soft transition-all cursor-pointer"
+              className="p-2 bg-[#E8B45D] hover:bg-[#D4A253] disabled:opacity-40 text-[#14161B] rounded-xl shadow-2xl transition-all cursor-pointer"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-3.5 h-3.5 text-[#14161B]" />
             </button>
           )}
         </div>

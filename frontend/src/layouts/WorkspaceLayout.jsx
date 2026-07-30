@@ -22,7 +22,7 @@ export const WorkspaceLayout = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background text-textPrimary overflow-hidden">
       <Navbar />
-      <div className="flex-1 w-full bg-slate-100/30 relative flex flex-col">
+      <div className="flex-1 w-full bg-slate-100/30 relative flex flex-col pt-3">
         <Outlet />
       </div>
     </div>

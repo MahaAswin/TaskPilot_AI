@@ -4,6 +4,7 @@ import {
   Trash2, BarChart2, Award, Zap, BookOpen, ShieldCheck, Mail, Sliders, Check, TrendingUp, History
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageContainer from '../../components/common/PageContainer';
 import { emailCoachService } from '../../services/emailCoachService';
 
 export const EmailCoach = () => {
@@ -119,41 +120,35 @@ export const EmailCoach = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-8">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900/60 via-purple-900/50 to-slate-900 p-6 sm:p-8 border border-indigo-500/20 shadow-2xl backdrop-blur-xl">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-inner">
-                <Mail className="w-6 h-6 animate-pulse" />
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                AI Email Writing Coach
-              </h1>
-              <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm">
-                LanguageTool + AI
-              </span>
-            </div>
-            <p className="text-sm text-slate-300 max-w-2xl">
-              Paste your email draft for real-time LanguageTool grammar inspection, mistake-based scoring, dynamic writing level assessment, and professional AI coaching.
-            </p>
+    <PageContainer>
+      {/* Top Header Card */}
+      <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgba(232,180,93,0.14)] border border-[#E8B45D]/30 text-[#E8B45D] text-xs font-bold">
+            <Sparkles className="w-3.5 h-3.5" />
+            AI EMAIL WRITING COACH
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#ECEAE3] flex items-center gap-3">
+            <Sparkles className="w-7 h-7 text-[#E8B45D]" />
+            <span>AI Email Writing Coach</span>
+          </h1>
+          <p className="text-[#C6C9D1] text-xs sm:text-sm max-w-2xl leading-relaxed font-normal">
+            Inspect emails with LanguageTool API + AI to score writing quality, fix grammar errors, detect tone, and get mistake-based improvement tips.
+          </p>
+        </div>
 
-          <div className="flex items-center gap-3">
-            {comparison && (
-              <button
-                onClick={() => setShowComparisonModal(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 text-xs font-semibold transition-all shadow-lg hover:scale-[1.02]"
-              >
-                <TrendingUp className="w-4 h-4 text-indigo-400" />
-                <span>Compare Previous</span>
-              </button>
-            )}
-            <div className="px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-mono text-slate-400">
-              Stats: <span className="text-emerald-400 font-bold">{stats?.totalEmailsAnalyzed || 0} Emails Analyzed</span>
-            </div>
+        <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
+          {comparison && (
+            <button
+              onClick={() => setShowComparisonModal(true)}
+              className="btn-secondary px-4 py-2 text-xs flex items-center gap-2"
+            >
+              <TrendingUp className="w-4 h-4 text-[#E8B45D]" />
+              <span>Compare Previous</span>
+            </button>
+          )}
+          <div className="px-4 py-2 rounded-xl bg-[#242832] border border-white/10 text-xs font-mono text-[#C6C9D1]">
+            Stats: <span className="text-[#57B5A8] font-bold">{stats?.totalEmailsAnalyzed || 0} Analyzed</span>
           </div>
         </div>
       </div>
@@ -161,58 +156,58 @@ export const EmailCoach = () => {
       {/* Main Grid: Editor on Left, Results on Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left Column: Email Text Editor (5 Cols) */}
+        {/* Left Column: Email Text Editor (5 Cols) - Dark Work Surface */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 shadow-xl backdrop-blur-xl flex flex-col h-full">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <span className="text-xs font-bold tracking-wider text-slate-400 uppercase flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-indigo-400" /> Email Input Editor
+          <div className="dark-work-surface p-6 flex flex-col h-full">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <span className="text-xs font-bold tracking-wider text-[#ECEAE3] uppercase flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-[#E8B45D]" /> Email Input Editor
               </span>
-              <span className="text-[11px] font-mono text-slate-500">
+              <span className="text-[11px] font-mono text-[#E8B45D] font-bold">
                 {emailText.split(/\s+/).filter(Boolean).length} words
               </span>
             </div>
 
             <div className="space-y-4 my-4 flex-1">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Subject (Optional)</label>
+                <label className="block text-xs font-semibold text-[#C6C9D1] mb-1">Subject (Optional)</label>
                 <input
                   type="text"
                   placeholder="e.g. Senior Developer Application - John Doe"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#242832] border border-white/10 text-xs text-[#ECEAE3] placeholder-[#868C99] focus:outline-none focus:border-[#E8B45D]"
                 />
               </div>
 
               <div className="flex-1 flex flex-col min-h-[300px]">
-                <label className="block text-xs font-medium text-slate-400 mb-1">Email Body Text</label>
+                <label className="block text-xs font-semibold text-[#C6C9D1] mb-1">Email Body Text</label>
                 <textarea
                   placeholder="Paste or compose your email here..."
                   value={emailText}
                   onChange={(e) => setEmailText(e.target.value)}
                   rows={14}
-                  className="w-full flex-1 p-4 rounded-xl bg-slate-950/90 border border-slate-800 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-sans leading-relaxed resize-none transition"
+                  className="w-full flex-1 p-4 rounded-xl bg-[#242832] border border-white/10 text-xs font-mono text-[#ECEAE3] placeholder-[#868C99] focus:outline-none focus:border-[#E8B45D] leading-relaxed resize-none transition"
                 />
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+            <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleAnalyze}
                   disabled={isAnalyzing || !emailText.trim()}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-600/25 transition disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E8B45D] hover:bg-[#D4A253] text-[#14161B] font-extrabold text-xs shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {isAnalyzing ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#14161B]" />
                       <span>Analyzing...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 text-indigo-200" />
+                      <Sparkles className="w-4 h-4 text-[#14161B]" />
                       <span>Analyze Email</span>
                     </>
                   )}
@@ -220,7 +215,7 @@ export const EmailCoach = () => {
 
                 <button
                   onClick={handleClear}
-                  className="p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700/50 text-xs transition"
+                  className="p-2.5 rounded-xl bg-[#242832] hover:bg-white/10 text-[#868C99] hover:text-[#ECEAE3] border border-white/10 text-xs transition"
                   title="Clear text"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -230,9 +225,9 @@ export const EmailCoach = () => {
               {report?.correctedText && (
                 <button
                   onClick={handleCopyCorrected}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold transition"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[rgba(87,181,168,0.14)] hover:bg-[#57B5A8]/25 text-[#57B5A8] border border-[#57B5A8]/30 text-xs font-extrabold transition"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? <Check className="w-3.5 h-3.5 text-[#57B5A8]" /> : <Copy className="w-3.5 h-3.5 text-[#57B5A8]" />}
                   <span>{copied ? 'Copied' : 'Copy Corrected Email'}</span>
                 </button>
               )}
@@ -600,7 +595,7 @@ export const EmailCoach = () => {
         </div>
       )}
 
-    </div>
+    </PageContainer>
   );
 };
 

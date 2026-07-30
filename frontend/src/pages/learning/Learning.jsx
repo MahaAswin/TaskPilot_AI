@@ -108,79 +108,80 @@ export const Learning = () => {
     <PageContainer title="Learning Hub Agent | TaskPilot OS">
       <div className="space-y-8 w-full">
         
-        {/* Header Banner */}
-        <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-          
-          <div className="relative z-10 space-y-4">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center text-indigo-300 shadow-inner">
-                  <GraduationCap className="w-6 h-6 animate-pulse" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-black uppercase tracking-wider text-white">Learning Hub Agent</h1>
-                  <p className="text-xs text-indigo-200/80">YouTube Data API tutorial search, embedded player, and LLM short study notes generator.</p>
-                </div>
-              </div>
-              <span className="px-3 py-1 bg-indigo-500/20 border border-indigo-400/30 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-300">
-                LLM Provider: {llmProviderName}
-              </span>
+        {/* Top Header Card */}
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-soft flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1.5 flex-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-bold">
+              <GraduationCap className="w-3.5 h-3.5" />
+              LEARNING HUB AGENT
             </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
+              <GraduationCap className="w-7 h-7 text-[#5B5FEF]" />
+              <span>AI Learning Hub</span>
+            </h1>
+            <p className="text-slate-500 text-xs sm:text-sm max-w-2xl leading-relaxed font-normal">
+              Search for curated video courses via YouTube API and generate short study notes powered by Gemini.
+            </p>
+          </div>
 
-            {/* Quick Sample Topic Chips */}
-            <div className="space-y-2 pt-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-300/70 block">Select a Sample Tutorial Topic:</span>
-              <div className="flex flex-wrap gap-2">
-                {SAMPLE_TOPICS.map((topicText, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setTopicInput(topicText);
-                      handleSearchTutorials(topicText);
-                    }}
-                    className="px-3 py-1.5 bg-white/10 hover:bg-indigo-600/40 border border-white/15 rounded-xl text-xs font-semibold text-white/90 hover:text-white transition-all cursor-pointer text-left"
-                  >
-                    "{topicText}"
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="shrink-0 self-start md:self-auto">
+            <span className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+              Provider: {llmProviderName}
+            </span>
+          </div>
+        </div>
 
-            {/* Input Search Studio Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-indigo-500/20">
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-indigo-300 absolute left-4 top-3.5" />
-                <input
-                  type="text"
-                  value={topicInput}
-                  onChange={(e) => setTopicInput(e.target.value)}
-                  placeholder="Paste or search any topic (e.g. spring, React JS, Python, Data Structures)..."
-                  className="w-full pl-11 pr-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-xs font-semibold text-white placeholder-indigo-300/60 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/30"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSearchTutorials(topicInput);
+        {/* Search Studio Card - Dark Work Surface */}
+        <div className="dark-work-surface p-6 space-y-5">
+          <div className="space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 block">Select a Sample Topic:</span>
+            <div className="flex flex-wrap gap-2">
+              {SAMPLE_TOPICS.map((topicText, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setTopicInput(topicText);
+                    handleSearchTutorials(topicText);
                   }}
-                />
-              </div>
-              <button
-                disabled={isSearching}
-                onClick={() => handleSearchTutorials(topicInput)}
-                className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 disabled:opacity-50 text-xs font-black uppercase tracking-wider text-white rounded-2xl shadow-lg hover:shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
-              >
-                {isSearching ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Searching YouTube & LLM...</span>
-                  </>
-                ) : (
-                  <>
-                    <Youtube className="w-4 h-4 text-red-400" />
-                    <span>Fetch Videos & LLM Notes</span>
-                  </>
-                )}
-              </button>
+                  className="px-3 py-1.5 bg-white/10 hover:bg-indigo-600/40 border border-white/10 rounded-xl text-xs font-medium text-indigo-100 hover:text-white transition-all cursor-pointer text-left"
+                >
+                  "{topicText}"
+                </button>
+              ))}
             </div>
+          </div>
 
+          <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-white/10">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-indigo-300 absolute left-4 top-3.5" />
+              <input
+                type="text"
+                value={topicInput}
+                onChange={(e) => setTopicInput(e.target.value)}
+                placeholder="Paste or search any topic (e.g. Spring, React JS, Python, Data Structures)..."
+                className="w-full pl-11 pr-4 py-3.5 bg-[#222937] border border-white/10 rounded-2xl text-xs font-semibold text-white placeholder-slate-400 focus:outline-none focus:border-[#5B5FEF]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSearchTutorials(topicInput);
+                }}
+              />
+            </div>
+            <button
+              disabled={isSearching}
+              onClick={() => handleSearchTutorials(topicInput)}
+              className="btn-primary px-6 py-3 text-xs flex items-center justify-center gap-2 cursor-pointer shrink-0"
+            >
+              {isSearching ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Generating Study Notes...</span>
+                </>
+              ) : (
+                <>
+                  <Youtube className="w-4.5 h-4.5 text-red-200" />
+                  <span>Fetch Videos & Notes</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -313,14 +314,14 @@ export const Learning = () => {
 
           </div>
 
-          {/* RIGHT 5 COLUMNS: LLM SHORT STUDY NOTES CARD */}
+          {/* RIGHT 5 COLUMNS: LLM SHORT STUDY NOTES CARD - Dark Work Surface */}
           <div className="lg:col-span-5 w-full">
             <motion.div 
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-slate-900 border border-indigo-500/40 rounded-3xl p-6 shadow-2xl text-white space-y-4 sticky top-6"
+              className="dark-work-surface p-6 space-y-4 sticky top-6"
             >
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2">
                   <Notebook className="w-4 h-4 text-indigo-400 animate-pulse" />
                   <h3 className="text-xs font-black uppercase tracking-wider text-white">
@@ -333,7 +334,7 @@ export const Learning = () => {
                       navigator.clipboard.writeText(aiNotesText);
                       showSuccess('LLM Short Notes copied to clipboard!');
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-bold text-indigo-200 transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-[10px] font-bold text-indigo-200 transition-all cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Copy Notes</span>
@@ -342,10 +343,10 @@ export const Learning = () => {
               </div>
 
               {/* Notes Text Body */}
-              <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 font-sans text-xs text-indigo-100/90 leading-relaxed whitespace-pre-wrap max-h-[600px] overflow-y-auto">
+              <div className="bg-[#222937] border border-white/10 rounded-2xl p-5 font-sans text-xs text-indigo-100/90 leading-relaxed whitespace-pre-wrap max-h-[600px] overflow-y-auto">
                 {aiNotesText || (
-                  <div className="py-8 text-center text-slate-500 text-xs font-medium space-y-2">
-                    <Sparkles className="w-6 h-6 text-indigo-400 mx-auto opacity-50" />
+                  <div className="py-8 text-center text-slate-400 text-xs font-medium space-y-2">
+                    <Sparkles className="w-6 h-6 text-indigo-400 mx-auto opacity-60" />
                     <p>AI Study Notes will be generated here once a tutorial topic is searched.</p>
                   </div>
                 )}

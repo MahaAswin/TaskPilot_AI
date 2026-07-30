@@ -35,20 +35,20 @@ export const WorkspaceHeader = ({
   };
 
   return (
-    <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md px-6 flex items-center justify-between z-20 sticky top-0">
+    <header className="h-16 border-b border-white/10 bg-[#1B1E25] px-6 flex items-center justify-between z-20 sticky top-0">
       
       {/* Left items: title & sidebar toggle */}
       <div className="flex items-center gap-3 overflow-hidden">
         <button 
           onClick={onToggleSidebar}
-          className="md:hidden p-1.5 hover:bg-slate-50 border border-slate-200 rounded-lg text-slate-500"
+          className="md:hidden p-1.5 hover:bg-white/5 border border-white/10 rounded-lg text-[#C6C9D1]"
         >
           <Menu className="w-4.5 h-4.5" />
         </button>
 
         <div className="flex items-center gap-2 overflow-hidden">
-          <BookOpen className="w-4 h-4 text-indigo-600 shrink-0" />
-          <h2 className="text-xs font-black uppercase text-slate-800 tracking-wider truncate max-w-[180px] sm:max-w-xs">
+          <BookOpen className="w-4 h-4 text-[#E8B45D] shrink-0" />
+          <h2 className="text-xs font-black uppercase text-[#ECEAE3] tracking-wider truncate max-w-[180px] sm:max-w-xs">
             {chatTitle || 'AI Productivity Companion'}
           </h2>
         </div>
@@ -58,9 +58,9 @@ export const WorkspaceHeader = ({
       <div className="flex items-center gap-2">
         <button 
           onClick={() => onCreateChat('New Workspace Session', 'Default')}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100/50 text-indigo-600 text-[10px] font-bold rounded-xl transition-all shadow-sm cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#E8B45D] hover:bg-[#D4A253] text-[#14161B] text-[10px] font-bold rounded-xl transition-all shadow-md cursor-pointer"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-3.5 h-3.5 text-[#14161B]" />
           <span className="hidden sm:inline">New Chat</span>
         </button>
 
@@ -68,18 +68,18 @@ export const WorkspaceHeader = ({
         <div className="relative">
           <button 
             onClick={() => setShowExportMenu(!showExportMenu)}
-            className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-[10px] font-bold text-slate-600 rounded-xl transition-colors shadow-soft cursor-pointer"
+            className="flex items-center gap-1 px-3 py-1.5 border border-white/10 bg-[#242832] hover:bg-white/5 text-[10px] font-bold text-[#ECEAE3] rounded-xl transition-colors shadow-md cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Export</span>
-            <ChevronDown className="w-3 h-3 text-slate-400" />
+            <ChevronDown className="w-3.5 h-3.5 text-[#868C99]" />
           </button>
 
           {showExportMenu && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
-              <div className="absolute right-0 mt-1.5 w-52 bg-white border border-slate-200 rounded-xl shadow-xl z-20 py-1.5">
-                <div className="px-3 py-1 text-[9px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1.5">
+              <div className="absolute right-0 mt-1.5 w-52 bg-[#1B1E25] border border-white/10 rounded-xl shadow-2xl z-20 py-1.5">
+                <div className="px-3 py-1 text-[9px] font-black text-[#868C99] uppercase tracking-wider border-b border-white/10 mb-1.5">
                   Select Format
                 </div>
                 {exportFormats.map(item => {
@@ -88,9 +88,9 @@ export const WorkspaceHeader = ({
                     <button
                       key={item.format}
                       onClick={() => handleExport(item.format)}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-50 text-left transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-[#C6C9D1] hover:text-[#ECEAE3] hover:bg-white/5 text-left transition-colors cursor-pointer"
                     >
-                      <Icon className="w-3.5 h-3.5 text-slate-400" />
+                      <Icon className="w-3.5 h-3.5 text-[#868C99]" />
                       <span>{item.label}</span>
                     </button>
                   );
@@ -103,7 +103,7 @@ export const WorkspaceHeader = ({
         <button 
           onClick={onClearChat}
           title="Clear Conversation"
-          className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-700 rounded-xl transition-colors cursor-pointer"
+          className="p-2 border border-white/10 hover:bg-white/5 text-[#868C99] hover:text-[#ECEAE3] rounded-xl transition-colors cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
@@ -111,7 +111,7 @@ export const WorkspaceHeader = ({
         <button 
           onClick={onToggleRightPanel}
           title="Agent Timeline & Previews"
-          className="p-2 border border-slate-200 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-xl transition-all cursor-pointer"
+          className="p-2 border border-white/10 hover:bg-[rgba(232,180,93,0.14)] text-[#868C99] hover:text-[#E8B45D] rounded-xl transition-all cursor-pointer"
         >
           <Cpu className="w-3.5 h-3.5 animate-pulse" />
         </button>

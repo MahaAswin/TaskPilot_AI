@@ -339,21 +339,21 @@ export const SkillCenter = () => {
       <div className="space-y-8 w-full">
         
         {/* Header Banner */}
-        <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl text-[#ECEAE3] relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-72 h-72 bg-[#E8B45D]/5 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-600/30 border border-indigo-400/40 flex items-center justify-center text-indigo-300 shadow-inner">
+                <div className="w-12 h-12 rounded-2xl bg-[#242832] border border-white/10 flex items-center justify-center text-[#E8B45D] shadow-inner">
                   <Brain className="w-6 h-6 animate-pulse" />
                 </div>
                 <div>
                   <h1 className="text-lg font-black uppercase tracking-wider text-white">Skill Analyzer Agent</h1>
-                  <p className="text-xs text-indigo-200/80">LLM-powered skill evaluation, dynamic MCQ testing, radar analytics & learning recommendations.</p>
+                  <p className="text-xs text-[#C6C9D1]">LLM-powered skill evaluation, dynamic MCQ testing, radar analytics & learning recommendations.</p>
                 </div>
               </div>
-              <span className="px-3 py-1 bg-indigo-500/20 border border-indigo-400/30 rounded-full text-[10px] font-bold uppercase tracking-wider text-indigo-300">
+              <span className="px-3 py-1 bg-[rgba(232,180,93,0.14)] border border-[#E8B45D]/30 rounded-full text-[10px] font-bold uppercase tracking-wider text-[#E8B45D]">
                 LLM Provider: {llmProviderName}
               </span>
             </div>
@@ -367,18 +367,18 @@ export const SkillCenter = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-soft space-y-6">
-              <div className="border-b border-slate-100 pb-4">
-                <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-indigo-600" />
+            <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+              <div className="border-b border-white/10 pb-4">
+                <h2 className="text-base font-black text-white flex items-center gap-2">
+                  <Target className="w-5 h-5 text-[#E8B45D]" />
                   <span>Configure Skill Assessment Targets</span>
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">Select the technical domains you want to test and benchmark.</p>
+                <p className="text-xs text-[#C6C9D1] mt-1">Select the technical domains you want to test and benchmark.</p>
               </div>
 
               {/* Popular Skills Selection Chips */}
               <div className="space-y-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block">Popular Skill Domains:</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-[#868C99] block">Popular Skill Domains:</label>
                 <div className="flex flex-wrap gap-2">
                   {POPULAR_SKILLS.map((skill) => {
                     const isSelected = selectedSkills.includes(skill);
@@ -388,8 +388,8 @@ export const SkillCenter = () => {
                         onClick={() => handleToggleSkill(skill)}
                         className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-2 ${
                           isSelected
-                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20 scale-[1.02]'
-                            : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200'
+                            ? 'bg-[#E8B45D] text-[#14161B] border-[#E8B45D] shadow-md shadow-[#E8B45D]/20 scale-[1.02]'
+                            : 'bg-[#242832] text-[#C6C9D1] hover:bg-white/5 border-white/10'
                         }`}
                       >
                         {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
@@ -401,8 +401,8 @@ export const SkillCenter = () => {
               </div>
 
               {/* Add Custom Skill Input */}
-              <div className="space-y-2 pt-2 border-t border-slate-100">
-                <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block">Add Custom Skill or Framework:</label>
+              <div className="space-y-2 pt-2 border-t border-white/10">
+                <label className="text-xs font-bold uppercase tracking-wider text-[#868C99] block">Add Custom Skill or Framework:</label>
                 <div className="flex gap-2 max-w-md">
                   <input
                     type="text"
@@ -410,11 +410,11 @@ export const SkillCenter = () => {
                     onChange={(e) => setCustomSkillInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleAddCustomSkill(); }}
                     placeholder="e.g. Next.js, Kubernetes, GraphQL..."
-                    className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
+                    className="flex-1 px-4 py-2.5 bg-[#242832] border border-white/10 rounded-xl text-xs font-semibold text-[#ECEAE3] placeholder-[#868C99] focus:outline-none focus:border-[#E8B45D]"
                   />
                   <button
                     onClick={handleAddCustomSkill}
-                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1 cursor-pointer"
+                    className="px-4 py-2.5 bg-[#242832] hover:bg-[#E8B45D] hover:text-[#14161B] text-[#ECEAE3] font-bold text-xs rounded-xl border border-white/10 transition-all flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Add</span>
@@ -423,18 +423,18 @@ export const SkillCenter = () => {
               </div>
 
               {/* Difficulty Selector & Launch Button */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-white/10">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-500">Target Difficulty:</span>
-                  <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+                  <span className="text-xs font-bold text-[#C6C9D1]">Target Difficulty:</span>
+                  <div className="flex bg-[#242832] p-1 rounded-xl border border-white/10">
                     {['Beginner', 'Intermediate', 'Advanced'].map((d) => (
                       <button
                         key={d}
                         onClick={() => setDifficulty(d)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                           difficulty === d 
-                            ? 'bg-white text-indigo-600 shadow-sm' 
-                            : 'text-slate-600 hover:text-slate-900'
+                            ? 'bg-[#1B1E25] text-[#E8B45D] shadow-sm' 
+                            : 'text-[#C6C9D1] hover:text-[#ECEAE3]'
                         }`}
                       >
                         {d}
@@ -445,11 +445,11 @@ export const SkillCenter = () => {
 
                 <button
                   onClick={handleGenerateMCQAssessment}
-                  className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg hover:shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="px-8 py-3.5 bg-[#E8B45D] hover:bg-[#D4A253] text-[#14161B] font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 text-[#14161B]" />
                   <span>Start Skill Assessment</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 text-[#14161B]" />
                 </button>
               </div>
             </div>
@@ -458,18 +458,18 @@ export const SkillCenter = () => {
 
         {/* ASSESSMENT STEP 2: GENERATING SPINNER */}
         {assessmentState === 'generating' && (
-          <div className="bg-white border border-slate-200/90 rounded-3xl p-16 text-center shadow-soft space-y-6">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center mx-auto shadow-inner">
-              <Brain className="w-8 h-8 text-indigo-600 animate-bounce" />
+          <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-16 text-center shadow-2xl space-y-6">
+            <div className="w-16 h-16 rounded-2xl bg-[rgba(232,180,93,0.14)] text-[#E8B45D] border border-[#E8B45D]/30 flex items-center justify-center mx-auto shadow-inner">
+              <Brain className="w-8 h-8 text-[#E8B45D] animate-bounce" />
             </div>
             <div className="space-y-2 max-w-md mx-auto">
-              <h3 className="text-base font-black uppercase tracking-wider text-slate-900">Synthesizing Customized MCQs</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
+              <h3 className="text-base font-black uppercase tracking-wider text-white">Synthesizing Customized MCQs</h3>
+              <p className="text-xs text-[#C6C9D1] leading-relaxed">
                 Generating skill assessment questions for {selectedSkills.join(', ')}...
               </p>
             </div>
             <div className="flex justify-center">
-              <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+              <Loader2 className="w-6 h-6 text-[#E8B45D] animate-spin" />
             </div>
           </div>
         )}
@@ -481,26 +481,26 @@ export const SkillCenter = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6 max-w-4xl mx-auto"
           >
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-soft space-y-6">
+            <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
               
               {/* Question Progress Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-full text-xs font-black uppercase">
+                  <span className="px-3 py-1 bg-[rgba(232,180,93,0.14)] text-[#E8B45D] border border-[#E8B45D]/30 rounded-full text-xs font-black uppercase">
                     Question {currentQuestionIdx + 1} of {quizQuestions.length}
                   </span>
-                  <span className="px-3 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded-full text-xs font-bold">
+                  <span className="px-3 py-1 bg-[#242832] text-[#C6C9D1] border border-white/10 rounded-full text-xs font-bold">
                     Domain: {quizQuestions[currentQuestionIdx]?.skill}
                   </span>
                 </div>
-                <span className="text-xs font-bold text-slate-400">
+                <span className="text-xs font-bold text-[#868C99]">
                   {Math.round(((currentQuestionIdx + 1) / quizQuestions.length) * 100)}% Complete
                 </span>
               </div>
 
               {/* Question Body */}
               <div className="space-y-4">
-                <h3 className="text-base font-extrabold text-slate-900 leading-snug">
+                <h3 className="text-base font-extrabold text-white leading-snug">
                   {quizQuestions[currentQuestionIdx]?.question}
                 </h3>
 
@@ -514,12 +514,12 @@ export const SkillCenter = () => {
                         onClick={() => handleSelectOption(currentQuestionIdx, optIdx)}
                         className={`w-full p-4 rounded-2xl text-xs font-semibold border transition-all text-left flex items-start gap-3 cursor-pointer ${
                           isSelected
-                            ? 'bg-indigo-50/90 border-indigo-500 text-indigo-950 font-bold shadow-sm'
-                            : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200/80 text-slate-800'
+                            ? 'bg-[rgba(232,180,93,0.14)] border-[#E8B45D] text-white font-bold shadow-sm'
+                            : 'bg-[#242832] hover:bg-[#242832]/80 border-white/10 text-[#C6C9D1]'
                         }`}
                       >
                         <div className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5 ${
-                          isSelected ? 'bg-indigo-600 text-white border-indigo-600' : 'border-slate-300 text-slate-500 bg-white'
+                          isSelected ? 'bg-[#E8B45D] text-[#14161B] border-[#E8B45D]' : 'border-white/10 text-[#C6C9D1] bg-[#1B1E25]'
                         }`}>
                           {String.fromCharCode(65 + optIdx)}
                         </div>
@@ -531,30 +531,30 @@ export const SkillCenter = () => {
               </div>
 
               {/* Navigation Controls */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-between pt-4 border-t border-white/10">
                 <button
                   disabled={currentQuestionIdx === 0}
                   onClick={() => setCurrentQuestionIdx(prev => prev - 1)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-2.5 bg-[#242832] hover:bg-white/10 disabled:opacity-30 text-[#ECEAE3] font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border border-white/10"
                 >
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="w-4 h-4 text-[#ECEAE3]" />
                   <span>Previous</span>
                 </button>
 
                 {currentQuestionIdx < quizQuestions.length - 1 ? (
                   <button
                     onClick={() => setCurrentQuestionIdx(prev => prev + 1)}
-                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+                    className="px-6 py-2.5 bg-[#E8B45D] hover:bg-[#D4A253] text-[#14161B] font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
                   >
                     <span>Next Question</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 text-[#14161B]" />
                   </button>
                 ) : (
                   <button
                     onClick={handleSubmitAssessment}
-                    className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-lg"
+                    className="px-8 py-3 bg-[#57B5A8] hover:bg-[#4A9F94] text-[#14161B] font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-lg"
                   >
-                    <CheckSquare className="w-4 h-4" />
+                    <CheckSquare className="w-4 h-4 text-[#14161B]" />
                     <span>Submit & Evaluate Assessment</span>
                   </button>
                 )}
@@ -572,42 +572,42 @@ export const SkillCenter = () => {
             className="space-y-8 w-full"
           >
             {/* Score & Rank Hero Card */}
-            <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 border border-indigo-500/30 rounded-3xl p-6 sm:p-8 text-white shadow-2xl space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-indigo-500/20 pb-4 gap-4">
+            <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-6 sm:p-8 text-[#ECEAE3] shadow-2xl space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-4 gap-4">
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-400/30">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-[#E8B45D] bg-[rgba(232,180,93,0.14)] px-3 py-1 rounded-full border border-[#E8B45D]/30">
                     Evaluation Complete
                   </span>
                   <h2 className="text-xl font-extrabold text-white mt-2 flex items-center gap-2">
-                    <Trophy className="w-6 h-6 text-amber-400" />
+                    <Trophy className="w-6 h-6 text-[#E8B45D]" />
                     Skill Proficiency Evaluation Results
                   </h2>
                 </div>
 
                 <button
                   onClick={() => setAssessmentState('input')}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/15 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                  className="px-4 py-2 bg-[#242832] hover:bg-white/10 text-white font-bold text-xs rounded-xl border border-white/15 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
                 >
-                  <RefreshCw className="w-3.5 h-3.5" />
+                  <RefreshCw className="w-3.5 h-3.5 text-white" />
                   <span>Re-Take Assessment</span>
                 </button>
               </div>
 
               {/* Score Badges Row */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Overall Score</span>
+                <div className="p-5 rounded-2xl bg-[#242832] border border-white/10 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#868C99] block">Overall Score</span>
                   <div className="text-3xl font-black text-white">{evaluatedScore}%</div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Proficiency Rank</span>
-                  <div className="text-2xl font-black text-emerald-400">{evaluatedRank}</div>
+                <div className="p-5 rounded-2xl bg-[#242832] border border-white/10 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#868C99] block">Proficiency Rank</span>
+                  <div className="text-2xl font-black text-[#57B5A8]">{evaluatedRank}</div>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Evaluated Domains</span>
-                  <div className="text-2xl font-black text-indigo-300">{selectedSkills.length} Skills</div>
+                <div className="p-5 rounded-2xl bg-[#242832] border border-white/10 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#868C99] block">Evaluated Domains</span>
+                  <div className="text-2xl font-black text-[#C6C9D1]">{selectedSkills.length} Skills</div>
                 </div>
               </div>
             </div>
@@ -626,9 +626,9 @@ export const SkillCenter = () => {
 
               {/* Right 6 Columns: AI Skill Recommendations */}
               <div className="lg:col-span-6 space-y-4 w-full">
-                <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4 text-indigo-600" />
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2">
+                    <Lightbulb className="w-4 h-4 text-[#E8B45D]" />
                     <span>AI Learning Recommendations ({aiRecommendations.length})</span>
                   </h3>
                 </div>

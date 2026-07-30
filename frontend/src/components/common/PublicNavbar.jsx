@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Cpu, ArrowRight, Lock } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const PublicNavbar = () => {
@@ -14,11 +14,8 @@ export const PublicNavbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex items-center justify-between h-16">
           
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform">
-              <Cpu className="w-4 h-4" />
-            </div>
+          <Link to="/" className="flex items-center gap-2 group">
+            <img src="/logo-icon.png" alt="TaskPilot AI Logo" className="w-6 h-6 object-contain group-hover:scale-105 transition-transform" />
             <span className="font-black text-base tracking-tight text-slate-900">
               TaskPilot <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">AI</span>
             </span>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Navigate, Outlet, Link } from 'react-router-dom';
-import { Cpu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/loaders/LoadingSpinner';
 
@@ -27,14 +26,9 @@ export const AuthenticationLayout = () => {
       <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-purple-500/3 rounded-full blur-[80px] pointer-events-none" />
 
       {/* Auth Logo */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 mb-6">
-        <Link to="/" className="flex flex-col items-center gap-2">
-          <div className="p-2.5 bg-indigo-50 border border-slate-200 rounded-2xl shadow-soft">
-            <Cpu className="w-6 h-6 text-indigo-600 animate-pulse" />
-          </div>
-          <span className="font-extrabold text-sm tracking-wider text-textPrimary uppercase mt-1">
-            TaskPilot <span className="text-indigo-600 font-black">AI</span>
-          </span>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 mb-8 flex flex-col items-center">
+        <Link to="/" className="flex flex-col items-center">
+          <img src="/logo-full.png" alt="TaskPilot AI Logo" className="w-48 h-48 object-contain" />
         </Link>
       </div>
 

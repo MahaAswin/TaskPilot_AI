@@ -6,6 +6,7 @@ import {
   ExternalLink, FileCode, Paperclip, Clock, Filter, Eye, ChevronRight, Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageContainer from '../../components/common/PageContainer';
 import { jobApplicationService } from '../../services/jobApplicationService';
 
 export const JobApplication = () => {
@@ -187,44 +188,35 @@ export const JobApplication = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 lg:p-8 space-y-8">
-      
-      {/* Top Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-900/60 via-teal-900/50 to-slate-900 p-6 sm:p-8 border border-emerald-500/20 shadow-2xl backdrop-blur-xl">
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-inner">
-                <Briefcase className="w-6 h-6 animate-pulse" />
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                AI Job Application Agent
-              </h1>
-              <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-sm">
-                Master Coordinator
-              </span>
-            </div>
-            <p className="text-sm text-slate-300 max-w-2xl">
-              Automates job searching, AI match scoring, application email drafting, cover letter PDF generation, and HR email dispatch in one unified workflow.
-            </p>
+    <PageContainer>
+      {/* Top Header Banner Card */}
+      <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgba(232,180,93,0.14)] border border-[#E8B45D]/30 text-[#E8B45D] text-xs font-bold">
+            <Briefcase className="w-3.5 h-3.5" />
+            AI JOB APPLICATION AGENT
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setCurrentStep(5)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition"
-            >
-              <Clock className="w-4 h-4 text-emerald-400" />
-              <span>Application History ({historyList.length})</span>
-            </button>
-          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+            <Briefcase className="w-7 h-7 text-[#E8B45D]" />
+            <span>AI Job Application Agent</span>
+          </h1>
+          <p className="text-[#C6C9D1] text-xs sm:text-sm max-w-2xl leading-relaxed font-normal">
+            Automates job searching, AI match scoring, application email drafting, cover letter PDF generation, and HR email dispatch in one unified workflow.
+          </p>
         </div>
+
+        <button
+          onClick={() => setCurrentStep(5)}
+          className="btn-secondary px-4 py-2.5 text-xs flex items-center gap-2 shrink-0 self-start md:self-auto shadow-sm"
+        >
+          <Clock className="w-4 h-4 text-[#E8B45D]" />
+          <span>Application History ({historyList.length})</span>
+        </button>
       </div>
 
       {/* Stepper Progress Bar */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
-        <div className="flex items-center justify-between overflow-x-auto gap-4 py-2">
+      <div className="bg-[#1B1E25] border border-white/10 rounded-3xl p-4 sm:p-5 shadow-2xl">
+        <div className="flex items-center justify-between overflow-x-auto gap-4 py-1">
           {[
             { step: 1, label: 'Candidate & Role' },
             { step: 2, label: 'Search Live Jobs' },
@@ -235,13 +227,13 @@ export const JobApplication = () => {
             <div
               key={s.step}
               onClick={() => setCurrentStep(s.step)}
-              className={`flex items-center gap-3 cursor-pointer shrink-0 transition ${currentStep === s.step ? 'text-emerald-400 font-bold' : currentStep > s.step ? 'text-slate-300' : 'text-slate-600'}`}
+              className={`flex items-center gap-2.5 cursor-pointer shrink-0 transition-all ${currentStep === s.step ? 'text-[#E8B45D] font-bold' : currentStep > s.step ? 'text-[#C6C9D1] font-medium' : 'text-[#868C99] font-normal'}`}
             >
-              <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black border ${currentStep === s.step ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20' : currentStep > s.step ? 'bg-slate-800 text-emerald-400 border-emerald-500/40' : 'bg-slate-950 text-slate-600 border-slate-800'}`}>
-                {currentStep > s.step ? <Check className="w-4 h-4" /> : s.step}
+              <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${currentStep === s.step ? 'bg-[#E8B45D] text-[#14161B] shadow-sm' : currentStep > s.step ? 'bg-[rgba(87,181,168,0.14)] text-[#57B5A8] border border-[#57B5A8]/30' : 'bg-[#242832] text-[#868C99] border border-white/10'}`}>
+                {currentStep > s.step ? <Check className="w-3.5 h-3.5" /> : s.step}
               </span>
               <span className="text-xs">{s.label}</span>
-              {s.step < 5 && <ChevronRight className="w-4 h-4 text-slate-700" />}
+              {s.step < 5 && <ChevronRight className="w-4 h-4 text-white/20 ml-1" />}
             </div>
           ))}
         </div>
@@ -712,8 +704,7 @@ export const JobApplication = () => {
           </div>
         </div>
       )}
-
-    </div>
+    </PageContainer>
   );
 };
 
