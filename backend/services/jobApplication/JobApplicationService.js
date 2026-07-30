@@ -66,7 +66,9 @@ export class JobApplicationService {
     const jobDescription = targetJob.description || '';
     const demoRecipient = JobApplicationConfig.getRecipientEmail(targetJob.hrEmail);
 
-    // 1. Generate HR Email Subject & Body using Gemini AI (reusing AI Email Agent engine)
+    console.log(`\n[JobApplicationAgent] Preparing Application for "${jobTitle}" at "${companyName}"...`);
+
+    // 1. Generate HR Email Subject & Body using TaskPilot AI Provider Chain (Job Application Agent)
     const emailPrompt = `Write a professional HR application email for the role of "${jobTitle}" at "${companyName}".
 Candidate Name: ${appDto.fullName || 'Candidate'}
 Email: ${appDto.email}

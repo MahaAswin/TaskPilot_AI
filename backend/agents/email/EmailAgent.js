@@ -23,10 +23,22 @@ export class EmailAgent extends BaseAgent {
       throw new Error('Email prompt or existing email content is required.');
     }
 
-    // 1. Try Gemini LLM Generation via ProviderManager
+    console.log(`\n====================================================`);
+    console.log(`[EmailAgent] Request Received`);
+    console.log(`[EmailAgent] Action: "${action}" | Tone: "${tone}"`);
+    console.log(`[EmailAgent] Prompt: "${promptText.slice(0, 80)}${promptText.length > 80 ? '...' : ''}"`);
+    if (existingSubject) console.log(`[EmailAgent] Existing Subject: "${existingSubject}"`);
+
+    // 1. Try LLM Generation via ProviderManager
     try {
-      if (process.env.GEMINI_API_KEY && ProviderManager) {
-        const systemInstruction = `You are an expert Executive AI Email Specialist for TaskPilot AI.
+      if (!ProviderManager) {
+        throw new Error('ProviderManager instance is not initialized or exported');
+      }
+
+      const primaryProvider = ProviderManager.primaryProvider || process.env.AI_PRIMARY_PROVIDER || process.env.AI_PROVIDER || 'gemini';
+      console.log(`[EmailAgent] Selected AI Primary Provider: ${primaryProvider.toUpperCase()}`);
+
+      const systemInstruction = `You are an expert Executive AI Email Specialist for TaskPilot AI.
 Task Action: "${action.toUpperCase()}"
 Requested Tone: "${tone}"
 User Prompt / Goal: "${promptText}"
@@ -44,28 +56,59 @@ Return ONLY valid JSON matching this schema:
   "body": "Full Email Body Text including Greeting, Body, and Sign-off"
 }`;
 
-        const aiResult = await ProviderManager.generateStructuredResponse(systemInstruction, {
-          type: 'object',
-          properties: {
-            subject: { type: 'string' },
-            body: { type: 'string' }
-          }
-        });
+      console.log(`[EmailAgent] Prompt Prepared (${systemInstruction.length} chars). Sending AI request...`);
+      const startTime = Date.now();
 
-        if (aiResult?.subject && aiResult?.body) {
-          return {
-            subject: aiResult.subject,
-            body: aiResult.body,
-            tone,
-            action
-          };
+      const aiResult = await ProviderManager.generateStructuredResponse(systemInstruction, {
+        type: 'object',
+        properties: {
+          subject: { type: 'string' },
+          body: { type: 'string' }
+        }
+      }, {
+        agent: 'EmailAgent'
+      });
+
+      const elapsed = Date.now() - startTime;
+      console.log(`[EmailAgent] AI Response Received in ${elapsed}ms`);
+
+      let subject = aiResult?.subject;
+      let body = aiResult?.body;
+
+      // Handle raw JSON string if returned wrapped
+      if (!subject && !body && typeof aiResult === 'string') {
+        try {
+          const parsed = JSON.parse(aiResult.replace(/```json/gi, '').replace(/```/g, '').trim());
+          subject = parsed.subject;
+          body = parsed.body;
+        } catch (e) {
+          // ignore parsing error
         }
       }
+
+      if (subject && body) {
+        console.log(`[EmailAgent] Response Parsed Successfully! Subject: "${subject}"`);
+        console.log(`====================================================\n`);
+        return {
+          subject,
+          body,
+          tone,
+          action
+        };
+      } else {
+        throw new Error('AI response did not contain required "subject" and "body" fields');
+      }
     } catch (err) {
-      console.warn('[EmailAgent] LLM generation fallback used:', err.message);
+      console.warn(`[EmailAgent] Fallback Triggered | Reason: ${err.message || err}`);
+      if (err.stack) {
+        const stackLine = err.stack.split('\n')[1] || '';
+        if (stackLine) console.warn(`[EmailAgent Error Trace] ${stackLine.trim()}`);
+      }
+      console.log(`[EmailAgent] Generating email using template fallback engine...`);
+      console.log(`====================================================\n`);
     }
 
-    // 2. Resilient Template Generator Fallback
+    // 2. Fallback Template Engine
     return this.getFallbackGeneratedEmail(promptText, tone, action, existingSubject, existingBody);
   }
 

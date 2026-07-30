@@ -155,8 +155,18 @@ JSON Structure:
   }
 
   static chatPrompt(messages = []) {
-    if (!messages || messages.length === 0) return 'Hello, how can I help you?';
-    const history = messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+    if (!messages) return 'Hello, how can I help you?';
+    if (typeof messages === 'string') return messages;
+    if (!Array.isArray(messages)) {
+      return typeof messages === 'object' ? (messages.content || messages.text || JSON.stringify(messages)) : String(messages);
+    }
+    if (messages.length === 0) return 'Hello, how can I help you?';
+    const history = messages.map(m => {
+      if (typeof m === 'string') return m;
+      const role = m.role === 'user' ? 'User' : (m.role ? 'Assistant' : 'User');
+      const content = m.content || m.text || '';
+      return `${role}: ${content}`;
+    }).join('\n');
     return `${history}\nAssistant:`;
   }
 

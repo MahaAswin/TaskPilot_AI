@@ -97,9 +97,14 @@ Experience: ${userProfile.experience || 'Entry Level'}
 Highlight enthusiasm, problem solving, and key project contributions.`;
 
     try {
-      const result = await aiService.chat([{ role: 'user', content: prompt }]);
-      return { coverLetter: result.response };
+      const result = await aiService.chat([{ role: 'user', content: prompt }], { agent: 'Career Intelligence Agent' });
+      const coverLetter = result.content || result.response || result.text;
+      if (coverLetter && coverLetter.length > 30) {
+        return { coverLetter };
+      }
+      throw new Error('Empty response from AI provider');
     } catch (e) {
+      console.warn('[CareerService] Cover letter AI fallback used:', e.message);
       return {
         coverLetter: `Dear Hiring Manager at ${company},\n\nI am writing to express my strong interest in the ${jobTitle} position. With solid expertise in software development and building scalable applications, I am eager to contribute to your engineering team.\n\nThank you for considering my application.\n\nSincerely,\n[Your Name]`
       };

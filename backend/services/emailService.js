@@ -48,9 +48,12 @@ export class EmailService {
    */
   async generateEmail(options) {
     try {
-      return await emailAgent.generateEmail(options);
+      console.log(`[EmailService] Delegating email generation to EmailAgent...`);
+      const result = await emailAgent.generateEmail(options);
+      console.log(`[EmailService] EmailAgent returned result successfully.`);
+      return result;
     } catch (error) {
-      console.error('[EmailService] Error generating email:', error);
+      console.error('[EmailService] Error generating email:', error.stack || error.message);
       throw ApiError.internal(`Failed to generate email: ${error.message}`);
     }
   }

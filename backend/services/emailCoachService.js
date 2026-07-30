@@ -526,9 +526,10 @@ async function generateAIEnhancements(text, subject, issues, scoring, toneResult
 
   try {
     const prompt = `Act as an AI Email Writing Coach. Analyze this email submission:\nSubject: ${subject}\nText: ${text}\nIssues detected: ${issues.map(i => i.type).join(', ')}\nProvide a 2-sentence professional writing summary focusing ONLY on this specific email. Do NOT judge overall English ability.`;
-    const aiRes = await aiService.chat([{ role: 'user', content: prompt }]);
-    if (aiRes && aiRes.response && aiRes.response.length > 20) {
-      summary = aiRes.response.replace(/["']/g, '').trim();
+    const aiRes = await aiService.chat([{ role: 'user', content: prompt }], { agent: 'Email Writing Coach Agent' });
+    const resText = aiRes?.content || aiRes?.response || aiRes?.text || '';
+    if (resText && resText.length > 20) {
+      summary = resText.replace(/["']/g, '').trim();
     }
   } catch (e) {
     // preserve default summary

@@ -68,13 +68,23 @@ export const googleDisconnect = asyncHandler(async (req, res) => {
  * @access  Public / Private
  */
 export const generateEmail = asyncHandler(async (req, res, next) => {
+  console.log(`\n[emailController] POST /api/email/generate received payload:`, {
+    action: req.body?.action,
+    tone: req.body?.tone,
+    promptLength: req.body?.prompt?.length || 0,
+    hasExistingBody: Boolean(req.body?.existingBody)
+  });
+
   const validation = validateEmailGenerateInput(req.body);
 
   if (!validation.isValid) {
+    console.warn(`[emailController] Validation failed:`, validation.errors);
     return next(ApiError.badRequest('Invalid generation request', validation.errors));
   }
 
   const result = await emailService.generateEmail(validation.data);
+
+  console.log(`[emailController] Email generation complete. Responding with subject: "${result.subject}"`);
 
   return res.status(200).json({
     subject: result.subject,

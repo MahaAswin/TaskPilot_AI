@@ -64,6 +64,11 @@ export class GrokProvider extends BaseProvider {
     return await this._callGrok(prompt);
   }
 
+  async generateStructuredResponse(prompt, schema = {}, options = {}) {
+    const raw = await this._callGrok(prompt);
+    return this._parseJSON(raw);
+  }
+
   async summarize(text, options = {}) {
     const promptText = PromptBuilder.summaryPrompt(text);
     return await this._callGrok(promptText);

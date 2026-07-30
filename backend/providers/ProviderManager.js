@@ -161,18 +161,22 @@ export class ProviderManager {
 
     for (let i = 0; i < chain.length; i++) {
       const pName = chain[i];
-      const nextProviderName = chain[i + 1] ? chain[i + 1].toUpperCase() : null;
+      const moduleName = options.agent || options.moduleName || 'TaskPilot AI Agent';
+      const promptLength = typeof prompt === 'string' ? prompt.length : (Array.isArray(prompt) ? JSON.stringify(prompt).length : 0);
 
       console.log(`====================================================`);
-      console.log(`Trying Provider: ${pName.toUpperCase()}`);
+      console.log(`Module Name:       ${moduleName}`);
+      console.log(`Selected Provider: ${pName.toUpperCase()}`);
 
       // 1. Health Pre-Check
       const health = await this.checkProviderHealth(pName);
       if (!health.healthy) {
-        console.log(`Status: Failed`);
-        console.log(`Failure Reason: ${health.reason}`);
+        console.log(`Model:             N/A`);
+        console.log(`Prompt Length:     ${promptLength} chars`);
+        console.log(`Status:            Failed`);
+        console.log(`Fallback Reason:   ${health.reason}`);
         if (nextProviderName) {
-          console.log(`Switching to ${nextProviderName}...`);
+          console.log(`Action:            Switching to ${nextProviderName}...`);
         }
         console.log(`====================================================\n`);
         continue;
@@ -181,16 +185,19 @@ export class ProviderManager {
       const provider = ProviderRegistry.getProviderInstance(pName, options);
 
       if (typeof provider[methodName] !== 'function') {
-        console.log(`Status: Failed`);
-        console.log(`Failure Reason: Method ${methodName} not supported by ${pName}`);
-        if (nextProviderName) console.log(`Switching to ${nextProviderName}...`);
+        console.log(`Model:             ${provider?.model || 'default'}`);
+        console.log(`Prompt Length:     ${promptLength} chars`);
+        console.log(`Status:            Failed`);
+        console.log(`Fallback Reason:   Method ${methodName} not supported by ${pName}`);
+        if (nextProviderName) console.log(`Action:            Switching to ${nextProviderName}...`);
         console.log(`====================================================\n`);
         continue;
       }
 
       const timeoutMs = options.timeout || 20000; // 20-second provider timeout
-      console.log(`Timeout: ${timeoutMs / 1000}s`);
-      console.log(`Model: ${provider.model || 'default'}`);
+      console.log(`Model:             ${provider.model || 'default'}`);
+      console.log(`Prompt Length:     ${promptLength} chars`);
+      console.log(`Timeout:           ${timeoutMs / 1000}s`);
 
       // 2. Execution Loop with Exponential Retry for Transient Failures
       const maxRetries = 1;
@@ -234,9 +241,9 @@ export class ProviderManager {
       const executionSec = ((Date.now() - providerStartTime) / 1000).toFixed(1);
 
       if (attemptSuccess && rawResult !== null && rawResult !== undefined && rawResult !== '') {
-        console.log(`Execution Time: ${executionSec}s`);
-        console.log(`Status: Success`);
-        console.log(`Returned to Coordinator`);
+        console.log(`Execution Time:    ${executionSec}s`);
+        console.log(`Status:            Success`);
+        console.log(`Fallback Reason:   None`);
         console.log(`====================================================\n`);
 
         this.metrics.successfulRequests++;
@@ -247,7 +254,7 @@ export class ProviderManager {
 
         const formatted = ResponseFormatter.format({
           providerName: provider.name,
-          agentName: options.agent || 'Coordinator Agent',
+          agentName: options.agent || 'TaskPilot AI Agent',
           responseBody: typeof rawResult === 'string' ? rawResult : JSON.stringify(rawResult),
           latencyMs: Date.now() - startTime,
           tokenCount: Math.round((typeof prompt === 'string' ? prompt.length : 100) / 4) + 120,
@@ -256,10 +263,10 @@ export class ProviderManager {
         formatted.rawResult = rawResult;
         return formatted;
       } else {
-        console.log(`Execution Time: ${executionSec}s`);
-        console.log(`Status: Failed`);
-        console.log(`Failure Reason: ${lastError?.message || 'Execution returned empty response'}`);
-        if (nextProviderName) console.log(`Switching to ${nextProviderName}...`);
+        console.log(`Execution Time:    ${executionSec}s`);
+        console.log(`Status:            Failed`);
+        console.log(`Fallback Reason:   ${lastError?.message || 'Execution returned empty response'}`);
+        if (nextProviderName) console.log(`Action:            Switching to ${nextProviderName}...`);
         console.log(`====================================================\n`);
       }
     }
@@ -269,6 +276,39 @@ export class ProviderManager {
     console.error(`[CRITICAL MULTI-PROVIDER FAILURE] Every provider in chain [${chain.join(', ')}] failed.`);
 
     throw new Error('AI service is temporarily unavailable. Please try again later.');
+  }
+
+  /**
+   * Generates a structured JSON response from prompt via Priority Chain
+   */
+  async generateStructuredResponse(prompt, schema = {}, options = {}) {
+    const formatted = await this.executeMethod('generateStructuredResponse', prompt, { schema, ...options });
+    
+    if (formatted && formatted.rawResult !== undefined && formatted.rawResult !== null) {
+      if (typeof formatted.rawResult === 'string') {
+        try {
+          const cleaned = formatted.rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
+          return JSON.parse(cleaned);
+        } catch (err) {
+          return { content: formatted.rawResult };
+        }
+      }
+      return formatted.rawResult;
+    }
+
+    if (formatted && formatted.content) {
+      if (typeof formatted.content === 'object') {
+        return formatted.content;
+      }
+      try {
+        const cleaned = formatted.content.replace(/```json/gi, '').replace(/```/g, '').trim();
+        return JSON.parse(cleaned);
+      } catch (err) {
+        return { content: formatted.content };
+      }
+    }
+
+    return formatted;
   }
 
   getHealth() {

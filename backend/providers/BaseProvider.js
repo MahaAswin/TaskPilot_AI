@@ -19,7 +19,19 @@ export class BaseProvider {
   }
 
   async generateStructuredResponse(prompt, schema = {}, options = {}) {
-    throw new Error('generateStructuredResponse() must be implemented by Provider subclass');
+    const textResponse = await this.generateText(prompt, options);
+    if (!textResponse) {
+      throw new Error(`[${this.name}] Empty response returned for structured response request`);
+    }
+    if (typeof textResponse === 'object') {
+      return textResponse;
+    }
+    const cleaned = textResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+    try {
+      return JSON.parse(cleaned);
+    } catch (parseErr) {
+      throw new Error(`[${this.name}] Failed to parse structured JSON response: ${parseErr.message}`);
+    }
   }
 
   async generateImage(prompt, options = {}) {

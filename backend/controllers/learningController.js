@@ -121,7 +121,7 @@ export const getQuizzes = asyncHandler(async (req, res, next) => {
   const { topic } = req.body;
   const targetTopic = topic || 'Computer Science & Software Engineering';
 
-  const providerResult = await globalProviderManager.executeMethod('generateQuiz', targetTopic);
+  const providerResult = await globalProviderManager.executeMethod('generateQuiz', targetTopic, { agent: 'Learning Hub Agent' });
 
   let rawQuizList = [];
   try {
@@ -150,7 +150,7 @@ export const getFlashcards = asyncHandler(async (req, res, next) => {
   const { topic } = req.body;
   const targetTopic = topic || 'Computer Science & Concepts';
 
-  const providerResult = await globalProviderManager.executeMethod('generateFlashcards', targetTopic);
+  const providerResult = await globalProviderManager.executeMethod('generateFlashcards', targetTopic, { agent: 'Learning Hub Agent' });
 
   let rawCardList = [];
   try {
@@ -270,8 +270,8 @@ export const searchYouTubeTutorials = asyncHandler(async (req, res, next) => {
   // 3. Generate LLM Short Study Notes via ProviderManager (generateNotes)
   let aiNotesText = '';
   try {
-    const aiResult = await globalProviderManager.executeMethod('generateNotes', cleanTopic);
-    aiNotesText = typeof aiResult === 'string' ? aiResult : (aiResult.response || aiResult.rawResult || '');
+    const aiResult = await globalProviderManager.executeMethod('generateNotes', cleanTopic, { agent: 'Learning Hub Agent' });
+    aiNotesText = typeof aiResult === 'string' ? aiResult : (aiResult.response || aiResult.content || aiResult.rawResult || '');
   } catch (err) {
     aiNotesText = `# 📚 Short Study Notes: ${cleanTopic}\n\n## 📌 Core Concepts & Overview\n- Key theoretical foundations and principles of **${cleanTopic}**.\n- Essential patterns, setup requirements, and architecture.\n\n## 🚀 Key Topics Covered in Tutorial\n1. Setup & Environment Configuration\n2. Fundamentals & Core Components\n3. Advanced Patterns & Optimization\n\n## ⚡ Quick Revision Summary\nReview code examples and build hands-on practice exercises while watching.`;
   }

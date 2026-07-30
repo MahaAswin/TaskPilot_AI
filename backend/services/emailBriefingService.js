@@ -86,8 +86,8 @@ ${cleanText.slice(0, 8000)}`;
     // 2. Query AI Provider (Gemini / Grok / Ollama / Mock)
     let aiResponseText = '';
     try {
-      const aiResult = await aiService.chat([{ role: 'user', content: systemPrompt }]);
-      aiResponseText = aiResult?.response || '';
+      const aiResult = await aiService.chat([{ role: 'user', content: systemPrompt }], { agent: 'Email Briefing Agent' });
+      aiResponseText = aiResult?.content || aiResult?.response || aiResult?.text || '';
     } catch (err) {
       console.warn('[EmailBriefingService] AI Provider error, switching to rule fallback engine:', err.message);
     }
@@ -184,8 +184,8 @@ User Instruction: ${instruction || 'Polite professional acknowledgment and actio
 Keep it clear, concise, and professional.`;
 
     try {
-      const result = await aiService.chat([{ role: 'user', content: prompt }]);
-      return { replyText: result.response };
+      const result = await aiService.chat([{ role: 'user', content: prompt }], { agent: 'Email Briefing Agent' });
+      return { replyText: result.content || result.response || result.text };
     } catch (e) {
       return {
         replyText: `Dear ${briefing?.sender?.name !== 'Not Mentioned' ? briefing?.sender?.name : 'Sender'},\n\nThank you for your email regarding "${briefing?.subject || 'the update'}".\n\nI have received your message and will review the details accordingly.\n\nBest regards,\n[Your Name]`

@@ -117,6 +117,11 @@ export class GeminiProvider extends BaseProvider {
     return await this._callGemini(prompt);
   }
 
+  async generateStructuredResponse(prompt, schema = {}, options = {}) {
+    const raw = await this._callGemini(prompt);
+    return this._parseJSON(raw);
+  }
+
   async chat(messages, options = {}) {
     const promptText = PromptBuilder.chatPrompt(messages);
     return await this._callGemini(promptText);

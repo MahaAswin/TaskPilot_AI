@@ -36,8 +36,8 @@ export const generateImage = asyncHandler(async (req, res, next) => {
   
   let descriptionText = '';
   try {
-    const aiResult = await globalProviderManager.executeMethod('explainTopic', descriptionPrompt);
-    descriptionText = typeof aiResult === 'string' ? aiResult : (aiResult.response || aiResult.rawResult || '');
+    const aiResult = await globalProviderManager.executeMethod('explainTopic', descriptionPrompt, { agent: 'Creative Agent' });
+    descriptionText = typeof aiResult === 'string' ? aiResult : (aiResult.response || aiResult.content || aiResult.rawResult || '');
   } catch (err) {
     descriptionText = `### 🎨 Visual Breakdown & Analysis\n\n- **Subject**: ${cleanPrompt}\n- **Artistic Style**: ${style}\n- **Lighting & Atmosphere**: Vibrant high-contrast illumination with deep color saturation.\n- **Composition**: Centered focal subject with detailed background depth and 8k rendering elements.`;
   }
@@ -87,7 +87,7 @@ export const generateFlowchart = asyncHandler(async (req, res, next) => {
   const { title, topic } = req.body;
   const targetTopic = topic || title || 'Workflow Flowchart';
 
-  const providerResult = await globalProviderManager.executeMethod('generateMermaidDiagram', targetTopic);
+  const providerResult = await globalProviderManager.executeMethod('generateMermaidDiagram', targetTopic, { agent: 'Creative Agent' });
 
   const asset = await CreativeAsset.create({
     userId: req.user._id,
@@ -115,7 +115,7 @@ export const generateMindmap = asyncHandler(async (req, res, next) => {
   const { title, topic } = req.body;
   const targetTopic = topic || title || 'Mindmap Concept';
 
-  const providerResult = await globalProviderManager.executeMethod('generateMindMapJSON', targetTopic);
+  const providerResult = await globalProviderManager.executeMethod('generateMindMapJSON', targetTopic, { agent: 'Creative Agent' });
 
   const asset = await CreativeAsset.create({
     userId: req.user._id,
@@ -143,7 +143,7 @@ export const generateDiagram = asyncHandler(async (req, res, next) => {
   const { title, topic } = req.body;
   const targetTopic = topic || title || 'System Architecture';
 
-  const providerResult = await globalProviderManager.executeMethod('generateMermaidDiagram', targetTopic);
+  const providerResult = await globalProviderManager.executeMethod('generateMermaidDiagram', targetTopic, { agent: 'Creative Agent' });
 
   const asset = await CreativeAsset.create({
     userId: req.user._id,

@@ -30,10 +30,10 @@ export class AiDocumentService {
     const prompt = prompts[enhancementType.toLowerCase()] || `Improve and refine the following document content:\n\n${text}`;
 
     try {
-      const result = await aiService.chat([{ role: 'user', content: prompt }]);
-      return result.response || text;
+      const result = await aiService.chat([{ role: 'user', content: prompt }], { agent: 'Document Generator Agent' });
+      return result.content || result.response || result.text || text;
     } catch (error) {
-      console.warn('[AiDocumentService] Gemini AI enhancement offline/error, falling back to original text:', error?.message);
+      console.warn('[AiDocumentService] AI enhancement error, falling back to original text:', error?.message);
       return text;
     }
   }
